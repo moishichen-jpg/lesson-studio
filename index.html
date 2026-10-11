@@ -1,0 +1,1993 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style></head><body>
+<title>שיטת מוישי חן</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Assistant:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: a 1600×900 "broadcast" stage scaled to fit — content on the right, presenter slot bottom-left;
+   under it a player bar, chapter chips and a teleprompter for the narrator. Single deliberate dark-teal look. */
+:root{
+  --bg:#0c2a2d;
+  --bg2:#12393d;
+  --ink:#f4efe6;
+  --muted:#9fbab6;
+  --gold:#f4b73e;
+  --coral:#ef6f5e;
+  --mint:#6fd3b0;
+  --line:rgba(244,239,230,.14);
+  --page:#071a1c;
+  --display:"Frank Ruhl Libre","David",Georgia,serif;
+  --body:"Assistant","Segoe UI",Arial,sans-serif;
+  color-scheme:dark;
+}
+html,body{background:var(--page);color:var(--ink)}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font-family:var(--body);padding-inline:16px;padding-block:16px 32px}
+.app{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+
+/* ---------- stage ---------- */
+#frame{position:relative;width:100%;aspect-ratio:16/9;max-width:100%;border-radius:14px;overflow:hidden;background:var(--bg);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#frame:fullscreen{border-radius:0;background:#000;display:grid;place-items:center}
+#stage{position:absolute;top:0;left:0;width:1600px;height:900px;transform-origin:0 0;overflow:hidden;
+  background:
+    radial-gradient(1100px 700px at 85% 0%, rgba(111,211,176,.10), transparent 60%),
+    radial-gradient(900px 600px at 0% 100%, rgba(244,183,62,.10), transparent 60%),
+    linear-gradient(160deg,var(--bg2),var(--bg));
+  font-family:var(--body);color:var(--ink)}
+#stage::before{content:"";position:absolute;inset:0;opacity:.35;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:80px 80px;mask-image:radial-gradient(1000px 600px at 60% 40%,#000 20%,transparent 75%)}
+#fx{position:absolute;inset:0;pointer-events:none}
+.topbar{position:absolute;top:26px;right:90px;left:90px;display:flex;gap:6px;z-index:5}
+.topbar i{flex:1;height:5px;border-radius:3px;background:rgba(244,239,230,.13);overflow:hidden;position:relative}
+.topbar i b{position:absolute;inset:0;right:0;width:0;background:var(--gold);border-radius:3px}
+.brand{position:absolute;bottom:26px;right:90px;font-size:20px;color:var(--muted);letter-spacing:.06em;z-index:5}
+.brand b{color:var(--gold);font-weight:700}
+
+/* scenes */
+.sc{position:absolute;inset:0;opacity:0;transform:scale(1.025);transition:opacity .9s ease,transform 1.4s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+.sc.live{opacity:1;transform:none}
+.hd{position:absolute;top:70px;right:90px;left:440px}
+.cx{position:absolute;top:220px;bottom:80px;right:90px;left:440px}
+.eb{font-size:22px;font-weight:800;letter-spacing:.14em;color:var(--gold);text-transform:uppercase}
+h2{font-family:var(--display);font-weight:900;font-size:68px;line-height:1.1;margin:10px 0 0;text-wrap:balance}
+h2 em{font-style:normal;color:var(--gold)}
+.lead{font-size:34px;line-height:1.45;color:var(--ink);margin:0}
+.muted{color:var(--muted)}
+.ic{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* reveal system */
+[data-t]{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform 1s cubic-bezier(.2,.8,.2,1),width 1.6s cubic-bezier(.2,.8,.2,1),height 1.6s cubic-bezier(.2,.8,.2,1)}
+[data-t].in{opacity:1;transform:none}
+[data-t].pop{transform:scale(.6)}
+[data-t].pop.in{transform:none}
+[data-t].side{transform:translateX(-40px)}
+[data-t].side.in{transform:none}
+[data-t].fade{transform:none}
+.grow{width:0!important}
+.grow.in{width:var(--w)!important}
+.growy{height:0!important}
+.growy.in{height:var(--h)!important}
+@media (prefers-reduced-motion: reduce){ [data-t],.sc{transition-duration:.01s!important} }
+
+/* shared components */
+.chip{display:inline-flex;align-items:center;gap:14px;padding:18px 28px;border-radius:999px;background:rgba(244,239,230,.07);border:1.5px solid var(--line);font-size:32px;font-weight:700}
+.chip .ic{width:38px;height:38px;color:var(--gold)}
+.card{background:rgba(244,239,230,.055);border:1.5px solid var(--line);border-radius:22px;padding:28px 30px;display:flex;flex-direction:column;gap:12px}
+.card h3{margin:0;font-size:34px;font-weight:800;display:flex;align-items:center;gap:14px}
+.card h3 .ic{width:44px;height:44px;color:var(--gold)}
+.card p{margin:0;font-size:27px;line-height:1.45;color:#dfe8e5}
+.why{display:flex;gap:18px;align-items:flex-start;background:rgba(244,183,62,.11);border:1.5px solid rgba(244,183,62,.4);border-radius:18px;padding:20px 26px;font-size:28px;line-height:1.45}
+.why b{color:var(--gold);white-space:nowrap}
+.quote{font-family:var(--display);font-weight:700;font-size:44px;line-height:1.3;color:var(--ink)}
+.quote::before{content:"„";color:var(--gold)}
+.quote::after{content:"”";color:var(--gold)}
+.tag{display:inline-block;font-size:19px;font-weight:700;letter-spacing:.08em;color:var(--bg);background:var(--muted);padding:4px 12px;border-radius:6px}
+.num{font-family:var(--display);font-weight:900;color:var(--gold);font-variant-numeric:tabular-nums}
+.row{display:flex;gap:28px;align-items:stretch}
+.col{display:flex;flex-direction:column;gap:22px}
+.arrow{color:var(--gold);font-size:46px;font-weight:800}
+
+/* presenter slot */
+#presenter{position:absolute;left:50px;bottom:60px;width:330px;height:420px;z-index:6;display:flex;flex-direction:column;align-items:center;gap:12px}
+#pframe{position:relative;width:330px;height:360px;border-radius:30px;overflow:hidden;background:rgba(244,239,230,.06);border:2px dashed rgba(244,239,230,.35)}
+#pframe.media,#pframe.green{border:3px solid var(--gold)}
+#pframe.green{background:#00b140}
+#pframe img,#pframe video{width:100%;height:100%;object-fit:cover;display:block}
+#pframe .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;color:var(--muted)}
+#pframe .ph p{position:absolute;top:18px;inset-inline:16px;margin:0;text-align:center;font-size:20px;font-weight:700;line-height:1.35}
+#pframe.talk::after{content:"";position:absolute;inset:-2px;border-radius:30px;box-shadow:inset 0 0 0 3px var(--gold);animation:talk 1.6s ease-in-out infinite}
+@keyframes talk{50%{box-shadow:inset 0 0 0 8px rgba(244,183,62,.35)}}
+#ptag{background:var(--gold);color:#1a1405;font-weight:800;font-size:24px;padding:8px 22px;border-radius:999px;max-width:330px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#presenter.hidden{display:none}
+#presenter.side{left:40px;top:80px;bottom:60px;height:auto;width:360px}
+#presenter.side #pframe{width:360px;height:auto;flex:1}
+#pframe img,#pframe video{object-position:var(--px,50%) var(--py,50%);transform:scale(var(--pz,1)) scaleX(var(--mx,1));transform-origin:var(--px,50%) var(--py,50%);touch-action:none;cursor:grab}
+#pframe iframe{width:100%;height:100%;border:0;display:block}
+#pframe.speaking{border-color:var(--gold);box-shadow:0 0 0 4px var(--gold),0 0 46px rgba(244,183,62,.55);transition:box-shadow .15s}
+#presenter.green #ptag{visibility:hidden}
+
+/* ---------- scene specifics ---------- */
+/* s1 */
+.s1{display:flex;flex-direction:column;justify-content:center;gap:22px;top:120px}
+.s1 h1{font-family:var(--display);font-weight:900;font-size:150px;line-height:1;margin:0;letter-spacing:-.01em}
+.s1 .uline{height:8px;background:linear-gradient(90deg,transparent,var(--gold));border-radius:4px;width:0;transition:width 1.6s cubic-bezier(.2,.8,.2,1)}
+.s1 .uline.in{width:560px}
+.s1 .lead{font-size:46px;color:var(--muted)}
+.flow3{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:24px}
+.flow3 .chip{font-size:27px;padding:14px 22px}
+.flow3 .arrow{font-size:38px}
+.stats{display:flex;gap:60px;margin-top:30px}
+.stats div{display:flex;align-items:baseline;gap:14px;font-size:30px;color:var(--muted)}
+.stats b{font-size:84px}
+
+/* s2 */
+.s2grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;height:100%}
+.ill{position:relative;border-radius:24px;background:rgba(0,0,0,.18);border:1.5px solid var(--line);overflow:hidden}
+.ill .org{position:absolute;right:40px;top:120px;width:150px;color:var(--mint);text-align:center;font-size:24px;font-weight:700}
+.ill .donor{position:absolute;left:50px;top:110px;width:150px;color:var(--ink);text-align:center;font-size:24px;font-weight:700}
+.ill .org svg,.ill .donor svg{width:130px;height:130px}
+.env{position:absolute;right:190px;top:165px;width:70px;height:70px;color:var(--gold);opacity:0}
+.sc.live .env.go{animation:fly 6s 0s infinite}
+@keyframes fly{0%{transform:translateX(0);opacity:0}8%{opacity:1}38%{transform:translateX(-310px);opacity:1}50%{transform:translateX(-300px) rotate(-12deg)}75%{transform:translateX(-80px) translateY(140px) rotate(-60deg);opacity:.5}85%,100%{transform:translateX(-60px) translateY(200px) rotate(-90deg);opacity:0}}
+.bubble{position:absolute;left:30px;top:40px;background:var(--ink);color:#1b2b2c;font-weight:800;font-size:26px;padding:10px 20px;border-radius:18px;opacity:0}
+.sc.live .bubble.go{animation:bub 6s 0s infinite}
+@keyframes bub{0%,38%{opacity:0;transform:scale(.7)}44%,70%{opacity:1;transform:none}78%,100%{opacity:0}}
+.score{position:absolute;bottom:26px;inset-inline:30px;display:flex;justify-content:space-between;font-size:28px;font-weight:700}
+.score b{font-size:48px}
+.reasons{display:flex;flex-direction:column;gap:22px;justify-content:center}
+.reason{display:flex;gap:18px;align-items:center;font-size:32px;font-weight:600}
+.reason .ic{width:46px;height:46px;color:var(--coral);background:rgba(239,111,94,.13);border-radius:50%;padding:8px}
+.flip{position:absolute;bottom:0;inset-inline:0;text-align:center}
+.flip span{font-family:var(--display);font-weight:900;font-size:54px;color:var(--gold)}
+
+/* s3 */
+.eq{position:relative;height:440px}
+.eq svg.lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.flowline{stroke:var(--gold);stroke-width:4;fill:none;stroke-dasharray:10 14;opacity:.85}
+.flowline:not(.in){opacity:0!important}
+.sc.live .flowline{animation:dash 1.2s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-48}}
+.node{position:absolute;display:flex;align-items:center;gap:16px;font-size:34px;font-weight:800;padding:22px 30px;border-radius:22px;background:rgba(244,239,230,.07);border:1.5px solid var(--line)}
+.node .ic{width:46px;height:46px;color:var(--gold)}
+.node.hub{border-radius:50%;width:230px;height:230px;justify-content:center;flex-direction:column;gap:8px;background:radial-gradient(circle,rgba(239,111,94,.35),rgba(239,111,94,.08));border-color:rgba(239,111,94,.6)}
+.node.hub .ic{color:var(--coral);width:64px;height:64px}
+.node.res{background:var(--gold);color:#1b1405;border-color:var(--gold)}
+.node.res .ic{color:#1b1405}
+.sc.live .node.hub.in .ic{animation:beat 1.4s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.18)}30%{transform:scale(1)}45%{transform:scale(1.12)}}
+
+/* s4 */
+.rings{position:relative;width:520px;height:520px;flex:none;margin-top:-40px}
+.ring{position:absolute;border-radius:50%;display:flex;align-items:flex-start;justify-content:center;font-weight:800;font-size:28px;padding-top:26px;border:2px solid}
+.r3{inset:0;border-color:rgba(159,186,182,.45);background:rgba(159,186,182,.07);color:var(--muted)}
+.r2{inset:95px;border-color:rgba(111,211,176,.6);background:rgba(111,211,176,.1);color:var(--mint)}
+.r1{inset:190px;border-color:var(--gold);background:rgba(244,183,62,.2);color:var(--gold);align-items:center;padding:0;font-size:34px}
+.sc.live .r3.in{animation:spin 40s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.example{border-inline-start:6px solid var(--gold);padding:10px 24px;font-size:32px;font-weight:700;line-height:1.45;background:rgba(244,183,62,.08);border-radius:6px}
+
+/* s5 road */
+.road{position:absolute;inset:0}
+.road svg{width:100%;height:100%;overflow:visible}
+.road .base{stroke:rgba(244,239,230,.15);stroke-width:46;fill:none;stroke-linecap:round}
+.road .lane{stroke:rgba(244,239,230,.45);stroke-width:3;fill:none;stroke-dasharray:18 18}
+.road .done{stroke:var(--gold);stroke-width:8;fill:none;stroke-linecap:round}
+.ms{position:absolute;width:300px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;translate:50% -46px}
+.ms .dot{width:92px;height:92px;border-radius:50%;background:var(--bg);border:4px solid var(--gold);display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:50px;color:var(--gold)}
+.ms h4{margin:6px 0 0;font-size:31px;font-weight:800;line-height:1.2}
+.ms p{margin:0;font-size:23px;color:var(--muted)}
+.traveler{position:absolute;width:40px;height:40px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 8px rgba(239,111,94,.25),0 0 30px rgba(239,111,94,.7);transform:translate(50%,-50%)}
+
+/* s6 */
+.field{position:relative;height:330px;border-radius:22px;background:rgba(0,0,0,.18);border:1.5px solid var(--line)}
+.dot6{position:absolute;width:26px;height:26px;border-radius:50%;background:#7f9894;left:var(--x0);top:var(--y0);transition:left 1.6s cubic-bezier(.3,.8,.2,1),top 1.6s cubic-bezier(.3,.8,.2,1),background .8s}
+.field.sorted .dot6{left:var(--x1);top:var(--y1);background:var(--c)}
+.glabel{position:absolute;bottom:14px;width:300px;text-align:center;font-size:25px;font-weight:800;transform:translateX(50%)}
+.crit{display:flex;gap:18px;margin-block:22px}
+.crit .chip{font-size:28px;padding:12px 24px}
+
+/* s7 */
+.g4{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.g4 .card{padding:24px 28px}
+.g4 .card h3{font-size:32px}
+.giftbar{margin-top:26px;position:relative;height:110px;display:flex;align-items:center;justify-content:space-between;font-size:28px;font-weight:800;padding-inline:20px;border-radius:20px;background:rgba(0,0,0,.18);border:1.5px solid var(--line)}
+.giftbar .gift{position:absolute;right:170px;top:22px;width:64px;height:64px;color:var(--gold)}
+.sc.live .giftbar.in .gift{animation:giftgo 5s ease-in-out infinite}
+@keyframes giftgo{0%{transform:none;opacity:0}10%{opacity:1}60%{transform:translateX(-560px)}75%,100%{transform:translateX(-560px) scale(1.3);opacity:0}}
+
+/* s8 newsletter */
+.news{width:520px;flex:none;background:#f6f1e7;color:#26302f;border-radius:18px;padding:30px 32px;box-shadow:0 30px 60px rgba(0,0,0,.4);transform-origin:top center}
+.news .nh{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #d9cfbd;padding-bottom:12px;margin-bottom:18px}
+.news .nh b{font-family:var(--display);font-size:32px}
+.news .nh span{font-size:18px;color:#7b7466}
+.news .ln{height:13px;border-radius:7px;background:#ddd4c3;margin-block:12px}
+.news .hl{font-size:27px;font-weight:800;line-height:1.45;margin-block:16px;padding:4px 8px;border-radius:6px;background:linear-gradient(transparent 55%,rgba(244,183,62,.75) 55%) no-repeat;background-size:0% 100%;transition:background-size 1.6s ease .4s}
+.news .hl.in{background-size:100% 100%}
+.news .sign{margin-top:18px;font-size:20px;color:#7b7466}
+.pts{display:flex;flex-direction:column;gap:22px}
+.pt{display:flex;gap:16px;align-items:center;font-size:31px;font-weight:700}
+.pt .ic{width:50px;height:50px;padding:9px;border-radius:50%;background:rgba(111,211,176,.15);color:var(--mint)}
+
+/* s9 */
+.msg{width:520px;flex:none;background:#e9f6ef;color:#203330;border-radius:26px 26px 26px 6px;padding:26px 30px;font-size:27px;line-height:1.5;box-shadow:0 20px 40px rgba(0,0,0,.35)}
+.msg small{display:block;margin-top:10px;font-size:18px;color:#5f7a73}
+.gauge{position:relative;width:360px;height:197px}
+.gcap{font-size:24px;font-weight:800;margin-top:-6px}
+.gauge svg{width:100%;height:100%;overflow:visible}
+.needle{transform-origin:210px 210px;transition:transform .3s linear}
+.bars{display:flex;gap:40px;align-items:flex-end;height:190px;padding-inline:20px}
+.bar{width:150px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:23px;font-weight:700;text-align:center;color:var(--muted)}
+.bar i{display:block;width:100%;border-radius:12px 12px 4px 4px;background:var(--muted)}
+.bar.hi i{background:var(--gold)}
+.bar.hi{color:var(--ink)}
+
+/* s10 pillars */
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;height:100%}
+.pillar{display:flex;flex-direction:column;gap:16px;padding:30px 28px;border-radius:26px;background:rgba(244,239,230,.055);border:1.5px solid var(--line)}
+.pillar .big{width:110px;height:110px;border-radius:50%;display:grid;place-items:center;background:rgba(244,183,62,.12);color:var(--gold)}
+.pillar .big .ic{width:64px;height:64px}
+.pillar h3{margin:0;font-size:40px;font-weight:800}
+.pillar p{margin:0;font-size:26px;line-height:1.5;color:#dfe8e5}
+.sc.live .pillar.in .spin{animation:spin 6s linear infinite}
+.sc.live .pillar.in .beat{animation:beat 1.4s ease-in-out infinite}
+.pillar.heart .big{background:rgba(239,111,94,.14);color:var(--coral)}
+.pillar.trust .big{background:rgba(111,211,176,.14);color:var(--mint)}
+
+/* s11 */
+.flame{transform-origin:12px 7px}
+.sc.live .flame{animation:flick 1.8s ease-in-out infinite}
+@keyframes flick{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.12,.92) rotate(-4deg)}60%{transform:scale(.94,1.08) rotate(3deg)}}
+
+/* s12 */
+.prayer{background:#f6f1e7;color:#26302f;border-radius:16px;padding:16px 20px;font-size:24px;font-weight:700;display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-height:70px}
+.prayer .nm{color:#b0772a;border-bottom:3px solid #e7b866;min-width:40px;white-space:nowrap}
+.prayer .caret{width:3px;height:34px;background:#b0772a;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* s13 */
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.viz{height:200px;display:flex;align-items:flex-end;justify-content:center;gap:16px}
+.viz .b{width:54px;border-radius:10px 10px 3px 3px;background:var(--gold)}
+.viz .b.lo{background:var(--muted)}
+.loop{width:180px;height:180px;color:var(--mint);margin-inline:auto}
+.sc.live .card.in .loop{animation:spin 8s linear infinite}
+.counter20{font-size:30px;font-weight:800;text-align:center}
+.counter20 b{font-size:64px}
+.beam{transform-origin:12px 8px;transition:transform 1.6s cubic-bezier(.3,1.6,.4,1)}
+
+/* s14 table */
+.tbl{display:flex;flex-direction:column;gap:18px}
+.tr{display:grid;grid-template-columns:330px 70px 1fr;align-items:center;gap:20px;padding:22px 28px;border-radius:20px;background:rgba(244,239,230,.055);border:1.5px solid var(--line)}
+.tr .other{font-size:30px;font-weight:800;color:var(--muted);display:flex;gap:12px;align-items:center}
+.tr .other .ic{width:40px;height:40px}
+.tr .vs{font-family:var(--display);font-weight:900;font-size:34px;color:var(--gold);text-align:center}
+.tr .ours{font-size:30px;font-weight:700;display:flex;gap:14px;align-items:center}
+.tr .ours .ic{width:44px;height:44px;color:var(--mint);flex:none}
+
+/* s15 timeline */
+.weeks{position:relative;height:520px}
+.wk{position:absolute;top:0;bottom:0;width:calc(100% / 8);border-inline-start:1.5px dashed var(--line)}
+.wk span{position:absolute;top:0;inset-inline:0;text-align:center;font-size:24px;font-weight:800;color:var(--muted)}
+.blk{position:absolute;height:66px;border-radius:14px;display:flex;align-items:center;justify-content:center;text-align:center;padding-inline:10px;font-size:21px;line-height:1.1;font-weight:800;color:#13201f;overflow:hidden}
+.pdetail{position:absolute;bottom:0;inset-inline:0;display:flex;gap:18px;align-items:center;padding:18px 24px;border-radius:18px;background:rgba(244,239,230,.06);border:1.5px solid var(--line);font-size:28px;line-height:1.4;min-height:96px}
+.pdetail .ic{width:52px;height:52px;flex:none}
+.pdetail b{color:var(--gold);white-space:nowrap}
+.cursor{position:absolute;top:40px;bottom:0;width:4px;background:var(--coral);box-shadow:0 0 18px var(--coral);transform:translateX(50%)}
+.cursor::before{content:"";position:absolute;top:-10px;left:50%;width:22px;height:22px;border-radius:50%;background:var(--coral);transform:translateX(-50%)}
+
+/* s16 */
+.recap{display:flex;gap:22px;flex-wrap:wrap}
+.recap .chip{font-size:34px}
+.motto{font-family:var(--display);font-weight:900;font-size:96px;line-height:1.05;margin:0}
+.motto span{color:var(--gold)}
+.task{display:flex;gap:18px;align-items:center;font-size:30px;font-weight:700;background:rgba(111,211,176,.12);border:1.5px solid rgba(111,211,176,.45);border-radius:18px;padding:20px 26px}
+.task .ic{width:48px;height:48px;color:var(--mint)}
+
+/* ---------- player chrome ---------- */
+.player{background:#0f2427;border:1px solid #1f3b3e;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.prow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.prow .grow1{flex:1;min-width:0}
+button,select,.filebtn{font-family:var(--body);font-weight:700;font-size:15px;border:0;border-radius:10px;padding:9px 14px;cursor:pointer;background:#1c3a3d;color:var(--ink)}
+button:hover,.filebtn:hover{background:#25494d}
+button:focus-visible,select:focus-visible,input:focus-visible,.filebtn:focus-within{outline:3px solid var(--gold);outline-offset:2px}
+#play{background:var(--gold);color:#1b1405;min-width:96px}
+#time{font-variant-numeric:tabular-nums;font-weight:700;color:var(--muted);min-width:118px;text-align:center}
+.scrub{position:relative;flex:1;min-width:200px;height:34px;display:flex;align-items:center}
+#seek{width:100%;accent-color:var(--gold);margin:0}
+.ticks{position:absolute;inset-inline:0;top:0;height:6px;pointer-events:none}
+.ticks i{position:absolute;top:0;width:2px;height:6px;background:#3d5c5f}
+label.ctl{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);font-weight:600}
+label.ctl input[type=range]{width:90px;accent-color:var(--gold)}
+input[type=text]{font-family:var(--body);font-size:15px;background:#0b1d1f;color:var(--ink);border:1px solid #2a4a4d;border-radius:10px;padding:8px 12px;min-width:0;width:170px}
+.filebtn{display:inline-flex;align-items:center;gap:6px;position:relative}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.chapters{display:flex;flex-wrap:wrap;gap:6px}
+.chapters button{font-size:13px;padding:6px 10px;background:#132c2f;color:var(--muted);font-weight:600}
+.chapters button.on{background:var(--gold);color:#1b1405}
+.prompter{background:#0f2427;border:1px solid #1f3b3e;border-radius:14px;padding:14px 18px;display:flex;flex-direction:column;gap:8px}
+.prompter header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.prompter header b{color:var(--gold);font-size:16px}
+.prompter header span{color:var(--muted);font-size:14px}
+#ptext{max-height:210px;overflow:auto;font-size:clamp(18px,2.2vw,26px);line-height:1.65;scroll-behavior:smooth;padding-inline-end:6px}
+#ptext p{margin:0 0 .6em}
+#ptext .next{color:var(--muted);font-size:.8em;border-top:1px dashed #2a4a4d;padding-top:.6em}
+.hint{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+body.clean .player,body.clean .prompter,body.clean .hint,body.clean .head{display:none}
+/* studio (recording) mode: stage on top, live controls, big teleprompter */
+#studio{display:none}
+body.studio{padding:8px}
+body.studio .app{height:calc(100dvh - 16px);max-width:none;gap:8px}
+body.studio .player,body.studio .head,body.studio .hint{display:none}
+body.studio #studio{display:flex}
+body.studio #frame{flex:none;width:min(100%, calc(var(--stageh,26dvh) * 16 / 9));align-self:center}
+body.studio .prompter{flex:1;min-height:0;padding:10px 14px}
+body.studio #ptwrap{flex:1;min-height:0}
+body.studio #ptext{max-height:none;flex:1;min-height:0;font-size:var(--pfs,24px);line-height:1.7}
+#ptwrap{position:relative;display:flex;flex-direction:column}
+#ptext{scroll-behavior:auto!important}
+.w.read{opacity:.45}
+.pguide{position:absolute;inset-inline:0;top:calc(var(--pfs,22px) * 1.3);height:0;border-top:2px solid rgba(244,183,62,.55);pointer-events:none}
+.pguide::before{content:"";position:absolute;inset-inline-start:-6px;top:-7px;border:6px solid transparent;border-inline-start-color:var(--gold)}
+.ptools{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ptools button,.sfoot .ptgrp button{padding:7px 12px;font-size:15px}
+.ptgrp{display:inline-flex;gap:4px;align-items:center}
+.ptspd{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);font-weight:700;white-space:nowrap}
+.ptspd input{width:110px;accent-color:var(--gold)}
+.sset summary{cursor:pointer;font-size:14px;color:var(--muted);font-weight:700;padding-block:2px}
+.sset[open] summary{margin-bottom:8px}
+#sUpcoming{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.studio .prompter header{display:none}
+body.studio .ptools{gap:5px}
+body.studio .ptools .ptspd{flex:1;min-width:0}
+body.studio .ptools .ptspd input{width:auto;flex:1;min-width:50px}
+@media (max-width:640px){
+  body.studio .big{font-size:16px;padding:10px 6px}
+  body.studio .studio{padding:8px 10px;gap:6px}
+  body.studio .sch{font-size:14px}
+  body.studio .stime{font-size:17px}
+  body.studio .ptools button{padding:6px 9px;font-size:14px}
+}
+#prWpmTxt{color:var(--ink);font-variant-numeric:tabular-nums;min-width:2.2em;text-align:center}
+#prToggle.on{background:var(--gold);color:#1b1405}
+.sfoot .ptgrp button.on{background:var(--gold);color:#1b1405}
+.studio{flex-direction:column;gap:8px;background:#0f2427;border:1px solid #1f3b3e;border-radius:14px;padding:10px 12px;flex:none}
+.srow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-weight:800;min-width:0}
+.srec{padding:5px 14px;border-radius:999px;background:#1c3a3d;font-size:16px}
+.srec.on{background:#d6453d;color:#fff;animation:recpulse 1.2s ease-in-out infinite}
+.srec.paused{background:#8a6a1e;color:#fff}
+@keyframes recpulse{50%{opacity:.6}}
+.stime{font-variant-numeric:tabular-nums;font-size:20px}
+.sch{color:var(--gold);min-width:0;flex:1;font-size:16px}
+.sbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.big{font-size:18px;padding:14px 10px;border-radius:12px}
+.big.red{background:#d6453d;color:#fff}
+.big.gold{background:var(--gold);color:#1b1405}
+.swait{background:rgba(244,183,62,.15);border:1px solid var(--gold);border-radius:10px;padding:8px 12px;font-weight:800;color:var(--gold);text-align:center}
+.snext{font-size:14px;color:var(--muted);line-height:1.5}
+.snext b{color:var(--ink)}
+.sfoot{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.sfoot button{padding:6px 12px;font-size:14px}
+/* background removal */
+#pframe canvas{width:100%;height:100%;object-fit:cover;display:block;object-position:var(--px,50%) var(--py,50%);transform:scale(var(--pz,1)) scaleX(var(--mx,1));transform-origin:var(--px,50%) var(--py,50%);touch-action:none}
+#pframe.cutout{background:transparent;border:0;border-radius:0;overflow:visible;box-shadow:none}
+#pframe.cutout canvas{object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 14px 30px rgba(0,0,0,.55))}
+#pframe.cutout.speaking{box-shadow:none}
+#pframe.cutout.speaking canvas{filter:drop-shadow(0 0 18px rgba(244,183,62,.75))}
+body.clean #frame{border-radius:0}
+.head h1{font-family:var(--display);font-weight:900;font-size:clamp(26px,4vw,38px);margin:0}
+.head p{margin:2px 0 0;color:var(--muted)}
+.lbl{font-size:14px;color:var(--gold);font-weight:800}
+.status{margin:0;min-height:1.4em;font-size:15px;color:var(--ink);line-height:1.5}
+.status.warn{color:#ffb4a8}
+#rec.on{background:#d6453d;color:#fff}
+button:disabled{opacity:.45;cursor:default}
+#ytUrl{width:220px}
+.preview{position:fixed;inset:0;z-index:60;background:rgba(3,10,12,.94);display:grid;place-items:center;padding:16px}
+.preview[hidden]{display:none}
+.pv{width:min(100%,960px);display:flex;flex-direction:column;gap:12px;color:var(--ink)}
+.pvt{font-size:22px;color:var(--gold)}
+.pv video{width:100%;border-radius:12px;background:#000;max-height:70dvh}
+.pvb{display:flex;gap:10px;flex-wrap:wrap}
+.pvb .big{flex:1}
+.pvn{color:var(--muted);font-size:14px;margin:0}
+#exitClean{position:fixed;top:10px;left:10px;z-index:50;opacity:.25;display:none}
+#exitClean:hover{opacity:1}
+body.clean #exitClean {display:block}
+/* ---------- presenter "director": the frame moves between shots ---------- */
+#stage #presenter{bottom:auto;transition:left 1.1s cubic-bezier(.65,0,.25,1),top 1.1s cubic-bezier(.65,0,.25,1),width 1.1s cubic-bezier(.65,0,.25,1),height 1.1s cubic-bezier(.65,0,.25,1)}
+#stage #presenter[class] #pframe{width:100%;height:auto;flex:1;min-height:0;transition:border-radius 1.1s,border-width .6s}
+#stage #presenter[class] #ptag{max-width:100%}
+#stage #presenter.pos-corner{left:50px;top:420px;width:330px;height:420px}
+#stage #presenter.pos-side{left:40px;top:80px;width:360px;height:760px}
+#stage #presenter.pos-top{left:60px;top:84px;width:290px;height:330px}
+#stage #presenter.pos-center{left:330px;top:110px;width:940px;height:690px;z-index:7}
+#stage #presenter.pos-full{left:0;top:0;width:1600px;height:900px;z-index:7}
+#stage #presenter.pos-full #pframe{border-radius:0;border-width:0}
+#stage #presenter.pos-full #ptag,#stage #presenter.pos-center #ptag{position:absolute;bottom:34px;left:40px;font-size:30px;padding:10px 28px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+#stage #presenter.pos-center #ptag{bottom:-10px}
+#scenes,#stage .topbar,#stage .brand{transition:opacity .9s ease,filter .9s ease}
+#stage.pfocus #scenes,#stage.pfocus .topbar,#stage.pfocus .brand{opacity:.14;filter:blur(6px)}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2c3 .2 5.5 2.2 5.5 5.3"/></symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><rect x="4.5" y="12" width="15" height="9" rx="1"/><path d="M12 8v13"/><path d="M12 8C10 4 6 4 6 6.5S10 8 12 8zm0 0c2-4 6-4 6-1.5S14 8 12 8z"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M3 5c3-1 6-1 9 1 3-2 6-2 9-1v14c-3-1-6-1-9 1-3-2-6-2-9-1z"/><path d="M12 6v14"/></symbol>
+    <symbol id="i-candle" viewBox="0 0 24 24"><rect x="9" y="10" width="6" height="11" rx="1"/><path d="M12 10V8"/><path class="flame" d="M12 2c1.6 2 1.6 3.6 0 5.2-1.6-1.6-1.6-3.2 0-5.2z"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-8-4.5-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.5-8 10-8 10z"/></symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24"><ellipse cx="12" cy="6.5" rx="7" ry="3"/><path d="M5 6.5v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/><path d="M5 11.5v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M7 16l4-5 3 3 5-7"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-cycle" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-14 5.3"/><path d="M4 12A8 8 0 0 1 18 6.7"/><path d="M18 3v4h-4"/><path d="M6 21v-4h4"/></symbol>
+    <symbol id="i-news" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24"><path d="M2 11l4-4h4l2 2 2-2h4l4 4"/><path d="M6 11l5 5c.6.6 1.4.6 2 0l5-5"/><path d="M9 14l-2 2M15 14l2 2"/></symbol>
+    <symbol id="i-mega" viewBox="0 0 24 24"><path d="M3 10v4l11 5V5z"/><path d="M14 9h2.5a3 3 0 0 1 0 6H14"/><path d="M6 15l1 5h3l-1-4"/></symbol>
+    <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/><path d="M3 12h18"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L19 7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></symbol>
+    <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M6 20h12"/><path class="beam" d="M4 8h16"/><path d="M6 8l-3 6h6zM18 8l-3 6h6z"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-gem" viewBox="0 0 24 24"><path d="M6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18M9 3l3 6 3-6M12 9v12"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+    <symbol id="i-mask" viewBox="0 0 24 24"><path d="M3 6c3 1 6 1 9 0 3 1 6 1 9 0v5c0 5-4 8-9 8s-9-3-9-8z"/><path d="M8 11h2M14 11h2M9 15c2 1 4 1 6 0"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M9 21v-5h6v5"/><path d="M9 11h.01M15 11h.01"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></symbol>
+    <symbol id="i-pray" viewBox="0 0 24 24"><path d="M12 3l-3 7v6l3 5 3-5v-6z"/><path d="M9 10L5 15v5M15 10l4 5v5"/></symbol>
+  </defs>
+</svg>
+
+<div class="app" dir="rtl">
+  <header class="head">
+    <h1>שיטת מוישי חן · אנימציה לשיעור</h1>
+    <p>15 דקות, 16 פרקים. מתאים להקלטה עם קריינות שלך.</p>
+  </header>
+
+  <div id="frame">
+    <div id="stage" dir="rtl">
+      <canvas id="fx" width="1600" height="900"></canvas>
+      <div class="topbar" id="topbar"></div>
+      <div id="scenes"></div>
+      <div id="presenter">
+        <div id="pframe">
+          <div class="ph">
+            <p>כאן תופיע דמות המרצה</p>
+            <svg viewBox="0 0 200 200" width="250" height="250" aria-hidden="true"><circle cx="100" cy="78" r="42" fill="rgba(244,239,230,.16)"/><path d="M20 200c0-48 36-80 80-80s80 32 80 80z" fill="rgba(244,239,230,.16)"/></svg>
+          </div>
+        </div>
+        <div id="ptag">מוישי חן</div>
+      </div>
+      <div class="brand">שיעור 1 · <b>שיטת מוישי חן</b></div>
+    </div>
+  </div>
+
+  <section id="studio" class="studio" aria-label="לוח הקלטה">
+    <div class="srow">
+      <span id="sRec" class="srec">לא מקליט</span>
+      <span id="sTime" class="stime">00:00</span>
+      <span id="sCh" class="sch"></span>
+    </div>
+    <div id="sWait" class="swait" hidden>האנימציה מחכה לך. כשתסיים להסביר, לחץ "פרק הבא".</div>
+    <div class="sbtns">
+      <button id="sStart" class="big red" type="button">● התחל הקלטה</button>
+      <button id="sPause" class="big" type="button">▶ חזרה בלי הקלטה</button>
+      <button id="sNext" class="big gold" type="button">פרק הבא</button>
+      <button id="sStop" class="big" type="button" hidden>■ סיים ושמור</button>
+    </div>
+    <div class="snext" id="sUpcoming"></div>
+    <details class="sset"><summary>⚙ הגדרות: גודל האנימציה, מוזיקה, מסך מלא, יציאה</summary>
+    <div class="sfoot">
+      <span class="ptgrp"><span>גודל האנימציה</span><button type="button" data-sh="14" aria-label="אנימציה קטנה">S</button><button type="button" data-sh="26" aria-label="אנימציה בינונית">M</button><button type="button" data-sh="42" aria-label="אנימציה גדולה">L</button></span>
+      <label class="ctl">מוזיקה <input id="sVol" type="range" min="0" max="1" step="0.05" value="0.35" aria-label="עוצמת מוזיקה"></label>
+      <label class="ctl"><input id="sSfx" type="checkbox" checked> אפקטים</label>
+      <button id="sFull" type="button">מסך מלא</button>
+      <button id="sRestore" type="button" hidden>שחזר הקלטה שלא נשמרה</button>
+      <button id="sExit" type="button">יציאה ממצב אולפן</button>
+      <span id="sSave">ההקלטה כוללת את האנימציה, אותך, הקול והמוזיקה בקובץ אחד. היא נשמרת תוך כדי בזיכרון הדפדפן, ובלחיצה על "סיים ושמור" יורדת לתיקיית ההורדות (Download).</span>
+    </div>
+    </details>
+  </section>
+
+  <div class="player">
+    <div class="prow">
+      <button id="play" type="button">▶ הפעל</button>
+      <button id="prevCh" type="button" aria-label="לפרק הקודם">→ פרק</button>
+      <button id="nextCh" type="button" aria-label="לפרק הבא">פרק ←</button>
+      <div class="scrub"><div class="ticks" id="ticks"></div><input id="seek" type="range" min="0" max="900" step="0.1" value="0" aria-label="מיקום באנימציה"></div>
+      <span id="time">00:00 / 15:00</span>
+    </div>
+    <div class="prow">
+      <label class="ctl"><input id="musicOn" type="checkbox" checked> מוזיקה</label>
+      <label class="ctl">עוצמה <input id="musicVol" type="range" min="0" max="1" step="0.05" value="0.35"></label>
+      <label class="ctl"><input id="sfxOn" type="checkbox" checked> אפקטים</label>
+      <span class="grow1"></span>
+      <button id="studioBtn" type="button" style="background:#d6453d;color:#fff">מצב אולפן: הקלטה</button>
+      <button id="clean" type="button">צפייה נקייה</button>
+      <button id="fs" type="button">מסך מלא</button>
+    </div>
+    <div class="prow">
+      <span class="lbl">המרצה:</span>
+      <select id="pmode" aria-label="מה מופיע במקום המרצה">
+        <option value="ph">דמות לדוגמה</option>
+        <option value="cam" selected>מצלמה חיה (מחשב / סלפי / טלפון)</option>
+        <option value="media">קובץ: תמונה / וידאו / הקלטה</option>
+        <option value="yt">סרטון YouTube</option>
+        <option value="green">מסך ירוק (להטמעה בעריכה)</option>
+        <option value="off">ללא</option>
+      </select>
+      <select id="camSel" aria-label="בחירת מצלמה" hidden></select>
+      <label class="ctl" id="mirrorWrap" hidden><input id="mirror" type="checkbox" checked> מראה</label>
+      <span class="filebtn">טען קובץ<input id="pfile" type="file" accept="image/*,video/*,audio/*"></span>
+      <input id="ytUrl" type="text" inputmode="url" placeholder="הדבק קישור YouTube" aria-label="קישור YouTube">
+      <button id="ytGo" type="button">הצג</button>
+      <select id="bgSel" aria-label="רקע מאחורי המרצה">
+        <option value="none">רקע: המקורי</option>
+        <option value="blur">רקע: טשטוש</option>
+        <option value="studio">רקע: סטודיו</option>
+        <option value="library">רקע: ספרייה של ספרי קודש</option>
+        <option value="stone">רקע: אבן ירושלמית</option>
+        <option value="dusk">רקע: שקיעה בירושלים</option>
+        <option value="green">רקע: מסך ירוק</option>
+        <option value="cut">בלי רקע: רק אני, על האנימציה</option>
+        <option value="custom">רקע: תמונה שלי…</option>
+      </select>
+      <input id="bgFile" type="file" accept="image/*" hidden>
+      <label class="ctl"><input id="dynOn" type="checkbox" checked> תנועה דינמית של המרצה</label>
+      <select id="playout" aria-label="מיקום המרצה"><option value="corner">בפינה</option><option value="side">בצד, גדול</option></select>
+      <label class="ctl">זום <input id="pzoom" type="range" min="1" max="2.5" step="0.05" value="1"></label>
+      <label class="ctl">שם <input id="pname" type="text" value="מוישי חן"></label>
+    </div>
+    <div class="prow">
+      <span class="lbl">הקלטה וסנכרון:</span>
+      <button id="rec" type="button">● הקלט שיעור</button>
+      <label class="ctl"><input id="holdOn" type="checkbox" checked> האנימציה מחכה לי בסוף כל פרק</label>
+      <button id="nextBtn" type="button">פרק הבא (N)</button>
+      <button id="saveRec" type="button" disabled>שמור את השיעור</button>
+      <button id="exportBtn" type="button">צור סרטון שיעור מלא</button>
+      <button id="autoSync" type="button" disabled>סנכרון אוטומטי לפי הדובר</button>
+      <button id="resetSync" type="button" disabled>בטל סנכרון</button>
+    </div>
+    <p id="msg" class="status" role="status"></p>
+    <div class="chapters" id="chapters"></div>
+  </div>
+
+  <section class="prompter" aria-live="polite">
+    <header><b id="pTitle">טקסט לקריינות</b><span id="pLeft"></span></header>
+    <div class="ptools" role="toolbar" aria-label="שליטה בטלפרומפטר">
+      <button id="prToggle" type="button" class="on" aria-label="עצירה או הפעלה של הגלילה">❚❚ גלילה</button>
+      <span class="ptgrp"><button id="prSlower" type="button" aria-label="לאט יותר">−</button><label class="ptspd"><span id="prWpmTxt">130</span> מילים/דקה<input id="prWpm" type="range" min="50" max="260" step="5" value="130" aria-label="קצב גלילה"></label><button id="prFaster" type="button" aria-label="מהר יותר">+</button></span>
+      <span class="ptgrp"><button id="prBack" type="button" aria-label="שורה אחורה">▲</button><button id="prFwd" type="button" aria-label="שורה קדימה">▼</button><button id="prTop" type="button" aria-label="לתחילת הפרק">⤒</button></span>
+      <span class="ptgrp"><button id="fMinus" type="button" aria-label="הקטן טקסט">א−</button><button id="fPlus" type="button" aria-label="הגדל טקסט">א+</button></span>
+      <label class="ctl"><input id="prDrive" type="checkbox" checked> האנימציה צמודה לטקסט</label>
+    </div>
+    <div id="ptwrap"><div id="ptext"></div><i class="pguide" aria-hidden="true"></i></div>
+  </section>
+  <p class="hint">הקלטה עם מצלמה: בחר "מצלמה חיה", לחץ "הקלט שיעור" ודבר. בסוף כל פרק האנימציה מחכה לך (N, "פרק הבא" או הקשה על המסך). בסיום השיעור מוכן לצפייה, ואפשר לשמור את הסרטון שלך. מקשים: רווח = הפעלה/עצירה, חיצים = 5 שניות קדימה/אחורה, PageUp/PageDown = פרק. בטעינת וידאו או הקלטה של 15 דקות, האנימציה מסתנכרנת לזמן של הקובץ. "מצב הקלטה" מסתיר את כל הכפתורים כדי שתוכל להקליט מסך נקי.</p>
+</div>
+<div id="preview" class="preview" hidden>
+  <div class="pv" dir="rtl">
+    <b class="pvt">השיעור המלא מוכן</b>
+    <video id="pvVideo" controls playsinline></video>
+    <div class="pvb"><button id="pvSave" class="big gold" type="button">⬇ שמור את השיעור</button><button id="pvClose" class="big" type="button">סגור</button></div>
+    <p class="pvn">הקובץ כולל את האנימציה, את המרצה, את הקול ואת המוזיקה. הוא יורד לתיקיית ההורדות (Download).</p>
+  </div>
+</div>
+<button id="exitClean" type="button">יציאה מצפייה נקייה</button>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const ic = (n, c = '') => `<svg class="ic ${c}"><use href="#i-${n}"/></svg>`;
+const TOTAL = 900;
+
+/* ================= SCENES ================= */
+const SCENES = [
+{ id: 'open', name: 'פתיחה', dur: 45,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.6">שיעור · גיוס משאבים למוסדות תורה</div></div>
+  <div class="cx s1">
+    <h1 data-t="1.6" data-s="rise">שיטת מוישי חן</h1>
+    <div class="uline" data-t="2.6"></div>
+    <p class="lead" data-t="3.6">לגיוס תורמים ותורמות</p>
+    <div class="flow3">
+      <span class="chip" data-t="8" data-s="pop">${ic('gift')}ערך מוסף</span><span class="arrow" data-t="9.5">←</span>
+      <span class="chip" data-t="11" data-s="pop">${ic('book')}חיבור למוצר</span><span class="arrow" data-t="12.5">←</span>
+      <span class="chip" data-t="14" data-s="chime" style="background:rgba(244,183,62,.18);border-color:var(--gold)">${ic('coin')}תרומה משמעותית</span>
+    </div>
+    <div class="stats">
+      <div data-t="24"><b class="num" data-count="3" data-ct="24" data-cd="1.2">0</b><span>שלבים</span></div>
+      <div data-t="27"><b class="num" data-count="4" data-ct="27" data-cd="1.2">0</b><span>זוויות השפעה</span></div>
+      <div data-t="30" data-s="chime"><b class="num" data-count="8" data-ct="30" data-cd="1.5">0</b><span>שבועות ליישום</span></div>
+    </div>
+  </div>`,
+  script: `שלום וברכה לכולם. היום אני רוצה להציג לכם שיטה שמשנה את הדרך שבה מוסדות פונים לתורמים: שיטת מוישי חן{3} לגיוס תורמים ותורמות.{4}
+השיטה בנויה על רעיון פשוט: לפני שמבקשים, נותנים. נותנים לתורם ערך מוסף{8} אמיתי, ומחברים אותו למוצר{11} שלנו, כלומר למשימה ולחזון של הארגון. ומשם מגיעה תרומה משמעותית.{14}
+בשיעור הזה נעבור על שלושת השלבים{24} של השיטה, נבין למה היא עובדת מארבע זוויות{27}: פסיכולוגית, תורנית, שיווקית וכלכלית. ובסוף נבנה יחד תוכנית עבודה של שמונה שבועות{30}, שאפשר להתחיל ליישם כבר מחר בבוקר.` },
+
+{ id: 'problem', name: 'הבעיה', dur: 60,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">נקודת המוצא</div><h2 data-t="1">הדרך הרגילה: <em>לבקש מיד</em></h2></div>
+  <div class="cx">
+    <div class="s2grid" style="height:470px">
+      <div class="reasons">
+        <div class="reason" data-t="18" data-s="pop">${ic('x')}הבקשה מגיעה לפני הקשר</div>
+        <div class="reason" data-t="25" data-s="pop">${ic('x')}התורם לא מכיר את המוסד</div>
+        <div class="reason" data-t="32" data-s="pop">${ic('x')}אין לו סיבה להגיד כן</div>
+        <div class="reason" data-t="38" data-s="pop">${ic('x')}עוד בקשה, מעוד מוסד, באותו יום</div>
+      </div>
+      <div class="ill" data-t="2" data-cls="go">
+        <div class="org">${ic('building')}<div>המוסד</div></div>
+        <div class="donor">${ic('person')}<div>התורם</div></div>
+        <div class="env" data-anim>${ic('mail')}</div>
+        <div class="bubble" data-anim>לא עכשיו…</div>
+        <div class="score"><span>פניות: <b class="num" id="p2n">0</b></span><span>תרומות: <b class="num" style="color:var(--coral)">0</b></span></div>
+      </div>
+    </div>
+    <div class="flip" data-t="46" data-s="rise"><span>ומה אם נהפוך את הסדר?</span></div>
+  </div>`,
+  update(lt, sc, fx) {
+    const ill = sc.querySelector('.ill');
+    const on = lt >= 4;
+    ill.querySelectorAll('[data-anim]').forEach(e => e.classList.toggle('go', on));
+    const n = lt < 4 ? 0 : Math.min(7, Math.floor((lt - 4) / 6) + 1);
+    const el = sc.querySelector('#p2n');
+    if (el.textContent !== String(n)) { el.textContent = n; if (n > 0) fx('thud'); }
+  },
+  script: `בואו נתחיל ממה שרובנו עושים היום. יש לנו צורך, יש לנו רשימה של שמות, ואנחנו פונים ישר: "אפשר תרומה?"{4}
+מה קורה? פנייה אחת, אין תשובה. עוד פנייה, "לא עכשיו". עוד אחת, והדלת נסגרת. תסתכלו על הלוח: הפניות עולות, והתרומות נשארות על אפס.{16}
+למה? כי הבקשה הגיעה לפני הקשר.{18} התורם לא מכיר אותנו{25}, לא יודע מה אנחנו עושים, ואין לו שום סיבה להגיד כן.{32} הוא שומע עוד בקשה, מעוד מוסד{38}, ביום שבו כבר קיבל עשר בקשות כאלה.
+אז השאלה שהשיטה הזאת שואלת היא: מה יקרה אם נהפוך את הסדר?{46} אם קודם נבנה קשר, ורק אחר כך נבקש?` },
+
+{ id: 'core', name: 'רעיון הליבה', dur: 60,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">הרעיון המרכזי</div><h2 data-t="1">מה מוביל ל<em>תרומה משמעותית</em>?</h2></div>
+  <div class="cx">
+    <div class="eq">
+      <svg class="lines" viewBox="0 0 1070 440" preserveAspectRatio="none" aria-hidden="true">
+        <path class="flowline" data-t="10" data-ty="fade" d="M740 90 C 690 90, 690 220, 627 220"/>
+        <path class="flowline" data-t="13" data-ty="fade" d="M740 350 C 690 350, 690 220, 627 220"/>
+        <path class="flowline" data-t="22" data-ty="fade" d="M393 220 L 368 220"/>
+      </svg>
+      <div class="node" data-t="5" data-s="pop" style="right:0;top:45px">${ic('gift')}ערך מוסף משמעותי</div>
+      <div class="node" data-t="8" data-s="pop" style="right:0;top:305px">${ic('book')}חיבור עמוק למוצר</div>
+      <div class="node hub pop" data-t="16" data-s="heart" style="right:445px;top:105px">${ic('heart')}<span>הזדהות</span></div>
+      <div class="node res pop" data-t="24" data-s="coin" style="left:0;top:180px">${ic('coin')}תרומה משמעותית</div>
+    </div>
+    <div class="quote" data-t="40" data-s="rise" style="margin-top:10px">קודם נותנים. אחר כך מבקשים.</div>
+  </div>`,
+  script: `וזה בדיוק הרעיון המרכזי. השיטה מתמקדת בשני דברים: יצירת ערך מוסף משמעותי{5} לתורם, וחיבור עמוק למוצר{8} של הארגון.
+כשהשניים האלה נפגשים{13}, נוצרת הזדהות.{16} והזדהות היא מה שמגביר את הסבירות לתרומה.{22} ולא סתם תרומה: תרומה משמעותית.{24}
+שימו לב לכיוון של החיצים. הערך המוסף והמוצר מזינים את ההזדהות, וההזדהות מובילה לתרומה. התרומה היא התוצאה, לא נקודת ההתחלה.{36}
+אם תזכרו משפט אחד מהשיעור הזה, תזכרו את זה: קודם נותנים, אחר כך מבקשים.{40}` },
+
+{ id: 'product', name: 'מה זה המוצר', dur: 45,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">מושג מפתח</div><h2 data-t="1">"המוצר" = <em>המשימה והחזון</em> של הארגון</h2></div>
+  <div class="cx">
+    <div class="row" style="gap:50px;align-items:center;height:100%">
+      <div class="col" style="flex:1;min-width:0">
+        <p class="lead" data-t="16">דוגמה למוצר במשפט אחד:</p>
+        <div class="example" data-t="18" data-s="pop">"אנו מפיצים תורה לילדים ממשפחות מעוטות יכולת"</div>
+        <p class="lead" data-t="30" style="margin-top:20px">התורם לא "קונה" תרומה.<br><b style="color:var(--gold)">הוא מצטרף למשימה.</b></p>
+      </div>
+      <div class="rings">
+        <div class="ring r3 fade" data-t="11" data-s="pop">פעילות יומיומית</div>
+        <div class="ring r2 fade" data-t="8" data-s="pop">משימה</div>
+        <div class="ring r1 pop" data-t="5" data-s="chime">חזון</div>
+      </div>
+    </div>
+  </div>`,
+  script: `רגע, מה זה "המוצר" במוסד תורני? הרי אנחנו לא מוכרים כלום.
+אז המוצר הוא המשימה והחזון של הארגון. במרכז עומד החזון{5}: למה אנחנו קיימים. סביבו המשימה{8}: מה אנחנו עושים כדי להגשים אותו. ומסביב, הפעילות היומיומית{11} שהתורם יכול לראות ולהרגיש.
+למשל{16}: "אנו מפיצים תורה לילדים{18} ממשפחות מעוטות יכולת". משפט כזה הוא המוצר.
+והתורם, כשהוא נותן, הוא לא קונה תרומה.{30} הוא מצטרף למשימה.` },
+
+{ id: 'map', name: 'שלושת השלבים', dur: 45,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">מבט על</div><h2 data-t="1">שלושה שלבים, <em>בסדר הזה</em></h2></div>
+  <div class="cx">
+    <div class="road">
+      <svg viewBox="0 0 1070 600" preserveAspectRatio="none" aria-hidden="true">
+        <path class="base" d="M1010 470 C 850 470, 820 170, 640 170 S 400 470, 230 470 S 80 250, 40 200"/>
+        <path class="lane" d="M1010 470 C 850 470, 820 170, 640 170 S 400 470, 230 470 S 80 250, 40 200"/>
+        <path class="done" id="roadDone" d="M1010 470 C 850 470, 820 170, 640 170 S 400 470, 230 470 S 80 250, 40 200"/>
+      </svg>
+      <div class="ms pop" data-t="6" data-s="pop" style="right:94.4%;top:62%"><div class="dot">1</div><h4>זיהוי קהל היעד</h4><p>למי אנחנו פונים</p></div>
+      <div class="ms pop" data-t="12" data-s="pop" style="right:40%;top:12%"><div class="dot">2</div><h4>ערך מוסף + חשיפת המוצר</h4><p>הלב של השיטה</p></div>
+      <div class="ms pop" data-t="20" data-s="coin" style="right:21.5%;top:62%"><div class="dot">3</div><h4>בקשת תרומה</h4><p>רק בסוף הדרך</p></div>
+      <div class="traveler" id="trav"></div>
+    </div>
+  </div>`,
+  init(sc) { const p = sc.querySelector('#roadDone'); this.len = p.getTotalLength(); p.style.strokeDasharray = this.len; },
+  update(lt, sc) {
+    const p = sc.querySelector('#roadDone'); const t = sc.querySelector('#trav');
+    const k = Math.max(0, Math.min(1, (lt - 4) / 30)), e = k * k * (3 - 2 * k);
+    p.style.strokeDashoffset = this.len * (1 - e);
+    const pt = p.getPointAtLength(this.len * e);
+    t.style.right = (100 - pt.x / 1070 * 100) + '%'; t.style.top = (pt.y / 600 * 100) + '%';
+  },
+  script: `השיטה כוללת שלושה שלבים, ותכף נעבור על כל אחד מהם לעומק.{5}
+שלב ראשון: זיהוי קהל היעד.{6} להבין למי אנחנו פונים.
+שלב שני, הלב של השיטה: יצירת ערך מוסף משמעותי וחשיפת המוצר.{12}
+ושלב שלישי: בקשת התרומה.{20}
+שימו לב שהבקשה מגיעה רק בסוף הדרך.{30} עד שהתורם מגיע אליה, הוא כבר מכיר אותנו, כבר קיבל מאיתנו, וכבר מחובר.{34}` },
+
+{ id: 's1', name: 'שלב 1: קהל היעד', dur: 75,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">שלב 1 מתוך 3</div><h2 data-t="1">זיהוי <em>קהל היעד</em></h2></div>
+  <div class="cx">
+    <div class="field" id="field" data-t="3"></div>
+    <div class="crit">
+      <span class="chip" data-t="14" data-s="pop">${ic('users')}גיל</span>
+      <span class="chip" data-t="16" data-s="pop">${ic('star')}ערכים</span>
+      <span class="chip" data-t="18" data-s="pop">${ic('book')}חיבור תורני</span>
+      <span class="tag" data-t="26" style="align-self:center">הקבוצות לדוגמה בלבד</span>
+    </div>
+    <div class="why" data-t="44" data-s="chime"><b>למה זה חשוב?</b><span>התאמה לקהל מאפשרת להציע ערך מוסף רלוונטי, ולספר על המוצר בצורה שתדבר אל ליבם.</span></div>
+  </div>`,
+  init(sc) {
+    const f = sc.querySelector('#field'); let h = '';
+    const groups = [{ c: '#f4b73e', x: 82 }, { c: '#6fd3b0', x: 50 }, { c: '#ef6f5e', x: 18 }];
+    let rnd = 7; const R = () => (rnd = (rnd * 9301 + 49297) % 233280) / 233280;
+    for (let i = 0; i < 39; i++) {
+      const g = groups[i % 3], k = Math.floor(i / 3), col = k % 4, row = Math.floor(k / 4);
+      h += `<i class="dot6" style="--x0:${(4 + R() * 90).toFixed(1)}%;--y0:${(8 + R() * 70).toFixed(1)}%;--x1:${(g.x - 7 + col * 4.4).toFixed(1)}%;--y1:${(14 + row * 15).toFixed(1)}%;--c:${g.c};transition-delay:${(R() * .6).toFixed(2)}s"></i>`;
+    }
+    h += `<div class="glabel" style="right:${100 - 82}%;color:#f4b73e">מחוברים ללימוד</div><div class="glabel" style="right:50%;color:#6fd3b0">בעלי עסקים</div><div class="glabel" style="right:82%;color:#ef6f5e">משפחות צעירות</div>`;
+    f.innerHTML = h; this.labels = f.querySelectorAll('.glabel');
+  },
+  update(lt, sc, fx) {
+    const f = sc.querySelector('#field'), s = lt >= 21;
+    if (f.classList.contains('sorted') !== s) { f.classList.toggle('sorted', s); if (s) fx('whoosh'); }
+    this.labels.forEach(l => l.style.opacity = lt >= 24 ? 1 : 0);
+  },
+  script: `שלב ראשון: זיהוי קהל היעד.{3}
+כל הנקודות שאתם רואים הן תורמים פוטנציאליים. כרגע הם ערבוביה אחת, ואם נפנה לכולם באותה דרך, נפספס את רובם.{12}
+אנחנו עושים פילוח מדויק לפי שלושה דברים: גיל{14}, ערכים{16}, וחיבור תורני.{18} ופתאום מתגלות קבוצות.{21} אלה רק דוגמאות{24}: אנשים שמחוברים ללימוד, בעלי עסקים, משפחות צעירות. אצלכם הקבוצות יהיו אחרות.{26}
+לכל קבוצה נתאים ערך מוסף אחר, ונספר את סיפור המוצר בצורה אחרת.
+למה זה חשוב?{44} כי התאמה לקהל מאפשרת להציע ערך מוסף שבאמת רלוונטי, ולספר על המוצר בצורה שתדבר אל ליבו של התורם. מי שמדבר לכולם באותה שפה, בסוף לא מדבר לאף אחד.` },
+
+{ id: 's2a', name: 'שלב 2: ערך מוסף', dur: 75,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">שלב 2 מתוך 3 · חלק א</div><h2 data-t="1">יצירת <em>ערך מוסף</em> משמעותי</h2></div>
+  <div class="cx">
+    <div class="g4">
+      <div class="card" data-t="8" data-s="pop"><h3>${ic('pray')}תפילה</h3><p>להצלחת התורם או יקיריו</p></div>
+      <div class="card" data-t="15" data-s="pop"><h3>${ic('candle')}לימוד תורה</h3><p>לעילוי נשמה</p></div>
+      <div class="card" data-t="22" data-s="pop"><h3>${ic('news')}ניוזלטר תורני</h3><p>תוכן מעשיר שמגיע באופן קבוע</p></div>
+      <div class="card" data-t="29" data-s="pop"><h3>${ic('star')}הזמנה לאירועים</h3><p>אירועים תורניים של המוסד</p></div>
+    </div>
+    <div class="giftbar" data-t="44" data-s="chime"><span>${''}המוסד</span>${ic('gift', 'gift')}<span style="color:var(--gold)">תחושת הדדיות ואמון</span><span>התורם</span></div>
+  </div>`,
+  script: `שלב שני, הלב של השיטה. מה עושים? מציעים לתורם משהו בעל ערך אישי ורוחני.{6}
+ארבע דוגמאות. תפילה{8} להצלחת התורם או להצלחת יקיריו. לימוד תורה{15} לעילוי נשמה של קרוב משפחה. ניוזלטר תורני{22} מעשיר שמגיע אליו באופן קבוע. והזמנה לאירועים{29} תורניים של המוסד.
+שימו לב: אף אחד מאלה לא עולה הרבה כסף. אבל כל אחד מהם הוא מתנה אמיתית.
+ומתנה יוצרת תחושת הדדיות ואמון.{44} התורם מרגיש שהמוסד השקיע בו, עוד לפני שביקש ממנו משהו.` },
+
+{ id: 's2b', name: 'שלב 2: חשיפת המוצר', dur: 60,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">שלב 2 מתוך 3 · חלק ב</div><h2 data-t="1"><em>חשיפת המוצר</em> בתוך התוכן</h2></div>
+  <div class="cx">
+    <div class="row" style="gap:50px;align-items:flex-start">
+      <div class="news" data-t="4" data-s="page">
+        <div class="nh"><b>דבר תורה לשבוע</b><span>ניוזלטר · גיליון 12</span></div>
+        <div class="ln" style="width:96%"></div><div class="ln" style="width:88%"></div><div class="ln" style="width:92%"></div><div class="ln" style="width:70%"></div>
+        <div class="hl" data-t="16" data-s="pop">"אנו מפיצים תורה לילדים ממשפחות מעוטות יכולת"</div>
+        <div class="ln" style="width:90%"></div><div class="ln" style="width:60%"></div>
+        <div class="sign">בברכה, הנהלת המוסד</div>
+      </div>
+      <div class="pts" style="flex:1;min-width:0;padding-top:20px">
+        <div class="pt" data-t="24" data-s="pop">${ic('book')}שוזרים את המשימה בתוך התוכן</div>
+        <div class="pt" data-t="30" data-s="pop">${ic('eye')}התורם מבין את ההשפעה</div>
+        <div class="pt" data-t="36" data-s="heart">${ic('heart')}ומתחבר אליה רגשית</div>
+        <div class="why" data-t="46" data-s="chime" style="margin-top:12px"><b>למה?</b><span>סיפור המוצר בונה הזדהות ומעורר רצון להיות שותף למשימה.</span></div>
+      </div>
+    </div>
+  </div>`,
+  script: `והחלק השני של השלב: חשיפת המוצר.{3}
+אנחנו לא שולחים רק דבר תורה.{4} אנחנו שוזרים בתוך התוכן מסרים על משימת הארגון.
+תראו את הניוזלטר הזה: דבר תורה, הסבר, ואז, בטבעיות, משפט אחד: "אנו מפיצים תורה לילדים{16} ממשפחות מעוטות יכולת". זה לא פרסומת וזה לא בקשה. זה סיפור.{24}
+כך התורם מבין את ההשפעה{30} של פעילות הארגון, ומתחבר אליה רגשית.{36}
+הערך המוסף בונה אמון, וסיפור המוצר בונה הזדהות{46} ומעורר רצון להיות שותף.` },
+
+{ id: 's3', name: 'שלב 3: בקשת תרומה', dur: 60,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">שלב 3 מתוך 3</div><h2 data-t="1"><em>בקשת תרומה</em>, בעדינות</h2></div>
+  <div class="cx">
+    <div class="row" style="gap:46px;align-items:flex-start">
+      <div class="msg" data-t="5" data-s="pop">שלום ר' יעקב, תודה שאתה איתנו כבר חודשיים.<br>כמו שראית, בזכות שותפים כמוך הילדים ממשיכים ללמוד.<br><b>נשמח שתהיה שותף גם בחודש הבא.</b><small>הודעה לדוגמה</small></div>
+      <div class="col" style="flex:1;min-width:0;align-items:center">
+        <div class="gauge" data-t="16">
+          <svg viewBox="0 0 420 230" aria-hidden="true">
+            <path d="M30 210 A180 180 0 0 1 390 210" stroke="rgba(244,239,230,.14)" stroke-width="30" fill="none"/>
+            <path d="M30 210 A180 180 0 0 1 390 210" stroke="url(#gg)" stroke-width="30" fill="none" stroke-dasharray="566" stroke-dashoffset="0"/>
+            <defs><linearGradient id="gg"><stop offset="0" stop-color="#ef6f5e"/><stop offset=".5" stop-color="#f4b73e"/><stop offset="1" stop-color="#6fd3b0"/></linearGradient></defs>
+            <g class="needle" id="needle"><path d="M210 210 L 210 60" stroke="#f4efe6" stroke-width="7" stroke-linecap="round"/><circle cx="210" cy="210" r="16" fill="#f4efe6"/></g>
+            
+          </svg>
+        </div>
+        <div class="gcap" data-t="16">סבירות לתרומה</div>
+        <div class="bars" data-t="28">
+          <div class="bar"><i class="growy" data-t="30" style="--h:44px"></i>בקשה קרה</div>
+          <div class="bar hi"><i class="growy" data-t="33" data-s="coin" style="--h:130px"></i>אחרי ערך וחיבור</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;font-size:24px;font-weight:700" data-t="36"><span>גובה התרומה</span><span class="tag">המחשה</span></div>
+      </div>
+    </div>
+    <div class="why" data-t="46" style="margin-top:6px;padding-block:14px"><b>למה זה חשוב?</b><span>התורם כבר מרגיש מחובר ומעריך את הארגון, וזה מגביר את הסבירות לתרומה ואת גובה התרומה.</span></div>
+  </div>`,
+  update(lt, sc) {
+    const k = Math.max(0, Math.min(1, (lt - 18) / 10)), e = k * k * (3 - 2 * k);
+    const wob = lt > 28 ? Math.sin(lt * 3) * 1.5 : 0;
+    sc.querySelector('#needle').style.transform = `rotate(${(-72 + e * 132 + wob).toFixed(1)}deg)`;
+  },
+  script: `ורק עכשיו, שלב שלישי: בקשת תרומה.{4}
+אחרי שהתורם קיבל ערך מוסף והתחבר למוצר, מבקשים בצורה עדינה{5}, ומדגישים את הקשר בין התרומה לבין המשימה. לא "תן לנו כסף", אלא "בוא תהיה שותף למה שכבר ראית".{14}
+למה זה עובד? כי התורם כבר מרגיש מחובר ומעריך את הארגון.{18}
+ותראו מה זה עושה לשני דברים: הסבירות שהוא יתרום עולה{28}, וגם גובה התרומה עולה.{36} אותו תורם, אותה בקשה, רק בתזמון אחר ואחרי הקשר הנכון.{46}` },
+
+{ id: 'psy', name: 'השפעה פסיכולוגית', dur: 60,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">למה זה עובד · 1 מתוך 4</div><h2 data-t="1">השפעה <em>פסיכולוגית</em></h2></div>
+  <div class="cx">
+    <div class="pillars">
+      <div class="pillar" data-t="5" data-s="pop"><div class="big">${ic('cycle', 'spin')}</div><h3>הדדיות</h3><p>ערך מוסף כמו תפילה או תוכן תורני מעורר תחושת מחויבות להחזיר טובה, כפי שמראה תיאוריית ההדדיות של צ'יאלדיני.</p></div>
+      <div class="pillar heart" data-t="22" data-s="heart"><div class="big">${ic('heart', 'beat')}</div><h3>חיבור רגשי</h3><p>סיפור המוצר, למשל "אנו מסייעים ליתומים ללמוד תורה", יוצר הזדהות רגשית שמגבירה את המוטיבציה לתרום.</p></div>
+      <div class="pillar trust" data-t="38" data-s="chime"><div class="big">${ic('shield')}</div><h3>אמון</h3><p>ערך מוסף איכותי ממצב את הארגון כאמין ומקצועי, ומפחית התנגדויות לבקשת התרומה.</p></div>
+    </div>
+  </div>`,
+  script: `עכשיו בואו נבין למה זה עובד, ונתחיל מהפסיכולוגיה. שלושה עקרונות.{4}
+הראשון: הדדיות.{5} ערך מוסף כמו תפילה או תוכן תורני מעורר תחושת מחויבות להחזיר טובה, כפי שמראה תיאוריית ההדדיות של צ'יאלדיני. התורם מרגיש שהארגון השקיע בו, ולכן נוטה יותר לתרום.{20}
+השני: חיבור רגשי.{22} סיפור המוצר, למשל "אנו מסייעים ליתומים ללמוד תורה", יוצר הזדהות רגשית, ומגביר את המוטיבציה לתרום.{36}
+השלישי: אמון.{38} ערך מוסף איכותי ממצב את הארגון כאמין ומקצועי, ומפחית התנגדויות לבקשת התרומה.` },
+
+{ id: 'torah', name: 'השפעה תורנית-רוחנית', dur: 45,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">למה זה עובד · 2 מתוך 4</div><h2 data-t="1">השפעה <em>תורנית-רוחנית</em></h2></div>
+  <div class="cx">
+    <div class="row" style="gap:28px">
+      <div class="card" data-t="4" data-s="pop" style="flex:1"><h3>${ic('candle')}ערך מוסף תורני</h3><p>תפילה, לימוד תורה או ניוזלטר תורני פונים לערכים יהודיים מרכזיים, ומחברים את התורם למשמעות רוחנית.</p><p style="color:var(--gold);font-weight:700">התורם רואה בתרומה דרך לקיים מצוות צדקה ולהשפיע על חייו.</p></div>
+      <div class="card" data-t="20" data-s="pop" style="flex:1"><h3>${ic('book')}חיבור למוצר</h3><p>הצגת המוצר כחלק ממשימה תורנית נותנת לתורם תחושת שותפות במפעל רוחני.</p><div class="quote" style="font-size:32px" data-t="27">תמיכתך מאפשרת לנו להתפלל עבור משפחות נזקקות</div></div>
+    </div>
+  </div>`,
+  script: `הזווית השנייה היא התורנית-רוחנית, ובעולם שלנו היא חזקה מאוד.{3}
+ערך מוסף תורני{4}, תפילה, לימוד תורה או ניוזלטר תורני, פונה לערכים יהודיים מרכזיים, ומחבר את התורם למשמעות רוחנית. התורם רואה בתרומה דרך לקיים מצוות צדקה ולהשפיע על חייו.{18}
+וכשאנחנו מציגים את המוצר כחלק ממשימה תורנית{20}, למשל "תמיכתך מאפשרת לנו להתפלל{27} עבור משפחות נזקקות", התורם מקבל תחושת שותפות במפעל רוחני.` },
+
+{ id: 'mkt', name: 'השפעה שיווקית', dur: 45,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">למה זה עובד · 3 מתוך 4</div><h2 data-t="1">השפעה <em>שיווקית</em></h2></div>
+  <div class="cx">
+    <div class="g3">
+      <div class="card" data-t="4" data-s="pop"><h3>${ic('mega')}שיווק תוכן</h3><p>ניוזלטר או סרטוני תפילה שומרים על קשר רציף עם התורם. המוצר בתוך התוכן מחזק את המותג של הארגון.</p></div>
+      <div class="card" data-t="16" data-s="pop"><h3>${ic('target')}התאמה אישית</h3><p>תפילה עם שם התורם, וסיפור מוצר שמדבר לצרכי הקהל, מגבירים את האפקטיביות.</p>
+        <div class="prayer"><span>תפילה להצלחת</span><span class="nm" id="nm"></span><i class="caret"></i></div></div>
+      <div class="card" data-t="30" data-s="pop"><h3>${ic('gem')}בידול</h3><p>בניגוד לפניות ישירות, הארגון משקיע בתורם לפני שהוא מבקש תרומה. זה מה שמבדיל אותו.</p></div>
+    </div>
+  </div>`,
+  update(lt, sc, fx) {
+    const name = 'ר׳ יעקב בן שרה', n = Math.max(0, Math.min(name.length, Math.floor((lt - 20) * 6)));
+    const el = sc.querySelector('#nm'); const s = name.slice(0, n);
+    if (el.textContent !== s) { el.textContent = s; if (n > 0) fx('key'); }
+  },
+  script: `הזווית השלישית היא שיווקית.{3}
+שיווק תוכן{4}: ערך מוסף כמו ניוזלטר או סרטוני תפילה הוא כלי שיווקי ששומר על קשר רציף עם התורם. וכשהמוצר מוצג בתוך התוכן, המותג של הארגון מתחזק.{14}
+התאמה אישית{16}: תפילה עם שם התורם{20}, וסיפור מוצר שמדבר לצרכי הקהל, מגבירים את האפקטיביות. תראו כמה זה פשוט: שם אחד, וההודעה הופכת לאישית.{28}
+ובידול{30}: בניגוד לפניות ישירות, השיטה מבדילה את הארגון בכך שהוא משקיע בתורם לפני שהוא מבקש תרומה.` },
+
+{ id: 'econ', name: 'השפעה כלכלית', dur: 45,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">למה זה עובד · 4 מתוך 4</div><h2 data-t="1">השפעה <em>כלכלית</em></h2></div>
+  <div class="cx">
+    <div class="g3">
+      <div class="card" data-t="4" data-s="pop"><h3>${ic('chart')}תרומות גבוהות יותר</h3>
+        <div class="viz"><i class="b lo growy" data-t="7" style="--h:60px"></i><i class="b lo growy" data-t="7.5" style="--h:80px"></i><i class="b growy" data-t="8.5" style="--h:130px"></i><i class="b growy" data-t="9.5" data-s="coin" style="--h:185px"></i></div>
+        <p>תורמים שהתחברו רואים בתרומה השקעה במשהו משמעותי.</p></div>
+      <div class="card" data-t="16" data-s="pop"><h3>${ic('cycle')}שימור תורמים</h3>
+        <div class="counter20" data-t="19">בזכותך,<br><b class="num" data-count="20" data-ct="20" data-cd="4">0</b><br>ילדים למדו תורה</div>
+        <p>ערך מוסף רציף ועדכונים על המוצר מגבירים נאמנות.</p></div>
+      <div class="card" data-t="28" data-s="pop"><h3>${ic('scale')}עלות-תועלת</h3>
+        <svg viewBox="0 0 24 24" class="ic" id="scaleIc" style="width:180px;height:180px;color:var(--gold);margin-inline:auto"><path d="M12 4v16M6 20h12"/><g class="beam" id="beam"><path d="M4 8h16"/><path d="M6 8l-3 6h6zM18 8l-3 6h6z"/></g></svg>
+        <p>תפילה או דיוור זולים יחסית, אבל מניבים תשואה גבוהה בגיוס.</p></div>
+    </div>
+  </div>`,
+  update(lt, sc) { sc.querySelector('#beam').style.transform = lt > 33 ? 'rotate(-14deg)' : 'rotate(0)'; },
+  script: `והזווית הרביעית, שכנראה הכי מעניינת אתכם: הכלכלית.{3}
+תרומות גבוהות יותר{4}: תורמים שקיבלו ערך מוסף והתחברו למוצר נוטים לתרום סכומים גבוהים יותר{10}, כי הם רואים בתרומה השקעה במשהו משמעותי.{14}
+שימור תורמים{16}: ערך מוסף רציף, כמו ניוזלטר חודשי, ועדכונים על המוצר, למשל "בזכותך{20}, 20 ילדים למדו תורה"{24}, מגבירים נאמנות. תורם שנשאר שווה הרבה יותר מתורם חדש.{27}
+ועלות-תועלת{28}: יצירת ערך מוסף כמו תפילה או דיוור זולה יחסית, אבל מניבה תשואה גבוהה{34} בגיוס.` },
+
+{ id: 'compare', name: 'לעומת גישות אחרות', dur: 45,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">השוואה</div><h2 data-t="1">יתרונות <em>לעומת גישות אחרות</em></h2></div>
+  <div class="cx">
+    <div class="tbl">
+      <div class="tr" data-t="5" data-s="pop"><span class="other">${ic('mail')}פנייה ישירה</span><span class="vs">←</span><span class="ours">${ic('check')}מפחיתה התנגדויות, כי בונה אמון דרך ערך מוסף</span></div>
+      <div class="tr" data-t="16" data-s="pop"><span class="other">${ic('mic')}קמפיינים המוניים</span><span class="vs">←</span><span class="ours">${ic('check')}קשר אישי וממוקד שמחבר את התורם למוצר</span></div>
+      <div class="tr" data-t="27" data-s="pop"><span class="other">${ic('mask')}מתן בסתר</span><span class="vs">←</span><span class="ours">${ic('check')}תחושת השפעה והכרה, דרך ערך מוסף תורני</span></div>
+    </div>
+  </div>`,
+  script: `איך השיטה עומדת מול הגישות המקובלות?{4}
+לעומת פנייה ישירה{5}, השיטה מפחיתה התנגדות, כי היא בונה אמון דרך ערך מוסף.{14}
+לעומת קמפיינים המוניים{16}, היא יוצרת קשר אישי וממוקד, שמחבר את התורם למוצר.{25}
+ולעומת מתן בסתר{27}, היא נותנת לתורם תחושת השפעה והכרה, דרך ערך מוסף תורני.
+היא לא מבטלת את הגישות האחרות. היא בונה את הבסיס שעליו הן עובדות טוב יותר.` },
+
+{ id: 'plan', name: 'תוכנית 8 שבועות', dur: 90,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">תוכנית מעשית ליישום</div><h2 data-t="1"><em>8 שבועות</em>, צעד אחר צעד</h2></div>
+  <div class="cx" style="top:210px">
+    <div class="weeks" id="weeks" style="height:470px"></div><div class="pdetail" id="pdetail" data-t="5"></div>
+  </div>`,
+  init(sc) {
+    const w = sc.querySelector('#weeks'); let h = '';
+    for (let i = 0; i < 8; i++) h += `<div class="wk" style="right:${i * 12.5}%"><span>שבוע ${i === 7 ? '<bdi dir="ltr">8+</bdi>' : i + 1}</span></div>`;
+    const B = [
+      [1, 1, 'פילוח קהל היעד', 'users', '#9fbab6', 'איסוף נתונים על תורמים פוטנציאליים ויצירת רשימה.', 6],
+      [2, 3, 'יצירת ערך מוסף', 'book', '#6fd3b0', 'יצירת תוכן תורני איכותי המשולב בחשיפת המוצר.', 20],
+      [4, 4, 'קשר ראשוני', 'mail', '#8fd0f0', 'הודעה אישית עם הצעה של ערך מוסף והצגת המוצר.', 36],
+      [5, 7, 'חיזוק הקשר', 'hand', '#f4b73e', 'המשך משלוח תוכן קבוע ועדכונים, ויצירת תחושת קהילה.', 50],
+      [8, 8, 'בקשת תרומה', 'coin', '#ef6f5e', 'בקשה עדינה, עם דגש על ההשפעה של התרומה על המוצר.', 68]
+    ];
+    this.B = B;
+    B.forEach(([a, b, t, icn, col, note, at], i) => {
+      const top = 44 + i * 84;
+      h += `<div class="blk grow" data-t="${at}" data-s="pop" style="right:calc(${(a - 1) * 12.5}% + 4px);top:${top}px;--w:calc(${(b - a + 1) * 12.5}% - 8px);background:${col}">${t}</div>`;
+    });
+    h += `<div class="cursor" id="wcur"></div>`;
+    w.innerHTML = h;
+  },
+  update(lt, sc) {
+    const marks = [[4, 0], [6, .5], [20, 1], [36, 3], [50, 4], [66, 7], [70, 7.5], [90, 8]];
+    let x = 0;
+    for (let i = 1; i < marks.length; i++) if (lt <= marks[i][0]) { const [t0, x0] = marks[i - 1], [t1, x1] = marks[i]; const k = Math.max(0, (lt - t0) / (t1 - t0)); x = x0 + (x1 - x0) * k; break; } else x = marks[i][1];
+    sc.querySelector('#wcur').style.right = (Math.min(8, x) * 12.5) + '%';
+    let cur = null; this.B.forEach(b => { if (lt >= b[6]) cur = b; });
+    const d = sc.querySelector('#pdetail'), key = cur ? cur[2] : '';
+    if (d.dataset.k !== key) { d.dataset.k = key; d.innerHTML = cur ? `<span style="color:${cur[4]}">${ic(cur[3])}</span><span><b>${cur[0] === cur[1] ? 'שבוע ' + cur[0] + (cur[0] === 8 ? ' ואילך' : '') : 'שבועות ' + cur[0] + '–' + cur[1]} · ${cur[2]}:</b> ${cur[5]}</span>` : '<span class="muted">שבוע אחר שבוע, מהפילוח ועד הבקשה.</span>'; }
+  },
+  script: `ועכשיו לתכל'ס: תוכנית מעשית פשוטה ליישום, שמונה שבועות.{5}
+שבוע ראשון{6}: פילוח קהל היעד. אוספים נתונים על תורמים פוטנציאליים, ויוצרים רשימה.{18}
+שבועות שניים ושלישי{20}: יצירת ערך מוסף משמעותי. מכינים תוכן תורני איכותי, שמשולב בו סיפור המוצר.{34}
+שבוע רביעי{36}: יצירת קשר ראשוני. שולחים הודעה אישית שכוללת הצעה של ערך מוסף, והצגה של המוצר.{48}
+שבועות חמישה עד שבעה{50}: חיזוק הקשר. ממשיכים לשלוח תוכן קבוע ועדכונים, ויוצרים תחושת קהילה.{66}
+ורק משבוע שמונה ואילך{68}: בקשת תרומה. בקשה עדינה, עם דגש על ההשפעה של התרומה על המוצר.{80}
+שימו לב כמה סבלנות יש כאן: שבעה שבועות של נתינה, לפני הבקשה.` },
+
+{ id: 'end', name: 'סיכום', dur: 45,
+  html: `
+  <div class="hd"><div class="eb" data-t="0.4">סיכום</div></div>
+  <div class="cx" style="top:150px;display:flex;flex-direction:column;gap:30px;justify-content:center">
+    <p class="motto" data-t="2" data-s="rise">קודם <span>ערך.</span><br>אחר כך <span>בקשה.</span></p>
+    <div class="recap">
+      <span class="chip" data-t="10" data-s="pop">${ic('target')}מזהים את הקהל</span>
+      <span class="chip" data-t="13" data-s="pop">${ic('gift')}נותנים ערך ומספרים את הסיפור</span>
+      <span class="chip" data-t="16" data-s="coin">${ic('coin')}ורק אז מבקשים</span>
+    </div>
+    <p class="lead" data-t="22">התוכנית פשוטה ומותאמת לארגונים שרוצים להצליח בגיוס.</p>
+    <div class="task" data-t="30" data-s="chime">${ic('check')}<span><b>משימה לשבוע הקרוב:</b> בחרו 10 תורמים, וכתבו לכל אחד מהם איזה ערך מוסף תוכלו לתת לו.</span></div>
+  </div>`,
+  script: `לסיכום.{2}
+שיטת מוישי חן מתמקדת בהשקעה בערך מוסף משמעותי ובחשיפת המוצר, כדי ליצור חיבור רגשי ורוחני עם התורם.{8}
+שלושה שלבים: מזהים את הקהל{10}, נותנים ערך ומספרים את הסיפור{13}, ורק אז מבקשים.{16}
+התוכנית פשוטה{22}, ומותאמת לכל ארגון שרוצה להצליח בגיוס.
+והמשימה שלכם לשבוע הקרוב{30}: לבחור עשרה תורמים, ולכתוב לכל אחד מהם איזה ערך מוסף אתם יכולים לתת לו. בהצלחה, ונתראה בשיעור הבא.` }
+];
+let acc = 0; SCENES.forEach(s => { s.start = acc; acc += s.dur; });
+
+/* ================= BUILD ================= */
+const scenesEl = $('#scenes');
+SCENES.forEach((s, i) => {
+  const d = document.createElement('section'); d.className = 'sc'; d.innerHTML = s.html; d.dataset.i = i;
+  scenesEl.appendChild(d); s.el = d;
+  if (s.init) s.init.call(s, d);
+  s.reveal = [...d.querySelectorAll('[data-t]')].map(e => ({ e, t: parseFloat(e.dataset.t), s: e.dataset.s }));
+  s.counts = [...d.querySelectorAll('[data-count]')];
+  // decorative flow lines must not move
+  d.querySelectorAll('[data-ty="fade"]').forEach(e => e.classList.add('fade'));
+});
+// top progress bar segments
+$('#topbar').innerHTML = SCENES.map(() => '<i><b></b></i>').join('');
+const segs = [...document.querySelectorAll('#topbar b')];
+// chapter chips + ticks
+$('#chapters').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${String(i + 1).padStart(2, '0')} · ${s.name}</button>`).join('');
+$('#ticks').innerHTML = SCENES.slice(1).map(s => `<i style="right:${s.start / TOTAL * 100}%"></i>`).join('');
+const chipBtns = [...document.querySelectorAll('#chapters button')];
+
+/* ================= AUDIO ================= */
+let ctx = null, master, musicG, sfxG, noiseBuf, verb, nextChord = 0, chordIdx = 0, musicTimer = null;
+function initAudio() {
+  if (ctx) return;
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+  ctx = new AC();
+  master = ctx.createGain(); master.gain.value = .9; master.connect(ctx.destination);
+  musicG = ctx.createGain(); musicG.gain.value = $('#musicOn').checked ? +$('#musicVol').value : 0;
+  sfxG = ctx.createGain(); sfxG.gain.value = $('#sfxOn').checked ? .7 : 0;
+  // generated reverb
+  verb = ctx.createConvolver(); const len = ctx.sampleRate * 3.2, ir = ctx.createBuffer(2, len, ctx.sampleRate);
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+  verb.buffer = ir; const vg = ctx.createGain(); vg.gain.value = .55; verb.connect(vg).connect(master);
+  musicG.connect(master); musicG.connect(verb); sfxG.connect(master); sfxG.connect(verb);
+  noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+  const nd = noiseBuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+}
+const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+// D major warm progression: D – Bm – G – A  (and G – D/F# – Em – A)
+const CHORDS = [[50, 62, 66, 69, 74], [47, 59, 62, 66, 71], [43, 55, 62, 67, 71], [45, 57, 61, 64, 69], [43, 55, 59, 62, 67], [42, 54, 62, 66, 69], [40, 52, 59, 64, 67], [45, 57, 61, 64, 69]];
+const CH_LEN = 6.4;
+function schedMusic() {
+  if (!ctx || !playing) return;
+  if (nextChord < ctx.currentTime) nextChord = ctx.currentTime + .05;
+  while (nextChord < ctx.currentTime + 1.5) {
+    const ch = CHORDS[chordIdx % CHORDS.length], t = nextChord;
+    ch.forEach((m, i) => {
+      const o = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+      o.type = i === 0 ? 'sine' : 'triangle'; o2.type = 'sine';
+      o.frequency.value = hz(m); o2.frequency.value = hz(m) * 1.003;
+      f.type = 'lowpass'; f.frequency.value = i === 0 ? 400 : 1300;
+      const pk = i === 0 ? .11 : .045;
+      g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(pk, t + 1.8); g.gain.setValueAtTime(pk, t + CH_LEN - 1.2); g.gain.linearRampToValueAtTime(.0001, t + CH_LEN + 1.4);
+      o.connect(f); o2.connect(f); f.connect(g).connect(musicG);
+      o.start(t); o2.start(t); o.stop(t + CH_LEN + 1.6); o2.stop(t + CH_LEN + 1.6);
+    });
+    // soft plucked arpeggio
+    const arp = [ch[2] + 12, ch[3] + 12, ch[4] + 12, ch[3] + 12];
+    for (let k = 0; k < 8; k++) {
+      const tt = t + .4 + k * .8, m = arp[k % 4];
+      const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = hz(m);
+      g.gain.setValueAtTime(.0001, tt); g.gain.exponentialRampToValueAtTime(.035, tt + .01); g.gain.exponentialRampToValueAtTime(.0001, tt + 1.4);
+      o.connect(g).connect(musicG); o.start(tt); o.stop(tt + 1.5);
+    }
+    nextChord += CH_LEN; chordIdx++;
+  }
+}
+function env(g, t, pk, d, a = .005) { g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(pk, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + d); }
+function tone(t, f0, f1, pk, d, type = 'sine', a) { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + d); env(g, t, pk, d, a); o.connect(g).connect(sfxG); o.start(t); o.stop(t + d + .05); }
+function noise(t, type, f0, f1, pk, d, q = 1) { const s = ctx.createBufferSource(); s.buffer = noiseBuf; const f = ctx.createBiquadFilter(); f.type = type; f.Q.value = q; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + d); const g = ctx.createGain(); env(g, t, pk, d, d * .35); s.connect(f).connect(g).connect(sfxG); s.start(t, Math.random()); s.stop(t + d + .05); }
+const SFX = {
+  pop(t) { tone(t, 520, 880, .16, .14); },
+  rise(t) { tone(t, 260, 780, .12, .7, 'triangle', .2); noise(t, 'bandpass', 400, 2400, .08, .8, .8); },
+  chime(t) { tone(t, 1046, 1046, .12, 1.6, 'triangle'); tone(t + .09, 1568, 1568, .08, 1.8, 'sine'); },
+  coin(t) { [0, .09].forEach(d => { tone(t + d, 1900, 1900, .07, .5, 'square'); tone(t + d, 2850, 2850, .05, .45, 'sine'); }); },
+  heart(t) { tone(t, 70, 45, .5, .18); tone(t + .22, 70, 45, .38, .18); },
+  whoosh(t) { noise(t, 'bandpass', 300, 2200, .22, .75, .9); },
+  page(t) { noise(t, 'highpass', 1800, 5000, .12, .35, .5); noise(t + .12, 'highpass', 2500, 6000, .08, .25, .5); },
+  thud(t) { tone(t, 140, 60, .25, .2); noise(t, 'lowpass', 900, 300, .12, .12); },
+  key(t) { noise(t, 'bandpass', 3000, 3000, .05, .04, 4); },
+  scene(t) { noise(t, 'bandpass', 600, 3000, .14, 1, .7); tone(t + .25, 392, 392, .05, 1.2, 'triangle'); }
+};
+function sfx(name) { if (!ctx || !$('#sfxOn').checked || !SFX[name]) return; SFX[name](ctx.currentTime + .01); }
+
+/* ================= ENGINE ================= */
+let T = 0, playing = false, lastNow = 0, curIdx = -1, media = null, mediaKind = null;
+function sceneAt(t) { for (let i = SCENES.length - 1; i >= 0; i--) if (t >= SCENES[i].start) return i; return 0; }
+/* teleprompter text: every word is a span; {12} markers in a script tie the word before them
+   to second 12 of that chapter's animation (anchors), so visuals appear as the narrator reads them */
+function buildPrompter(sc) {
+  let w = 0; const anchors = [[0, 0]];
+  const html = sc.script.split('\n').map(line => {
+    const parts = line.split(/(\{\d+(?:\.\d+)?\})/); let out = '';
+    parts.forEach(part => {
+      const mk = part.match(/^\{(\d+(?:\.\d+)?)\}$/);
+      if (mk) { anchors.push([Math.max(0, w - 1), Math.min(sc.dur - .05, +mk[1] + .1)]); return; }
+      part.split(/(\s+)/).forEach(tok => { if (!tok) return; if (/^\s+$/.test(tok)) out += ' '; else out += `<span class="w" data-i="${w++}">${tok}</span>`; });
+    });
+    return `<p>${out}</p>`;
+  }).join('');
+  anchors.push([w, sc.dur - .05]);
+  anchors.sort((a, b) => a[0] - b[0]);
+  for (let k = 1; k < anchors.length; k++) if (anchors[k][1] < anchors[k - 1][1]) anchors[k][1] = anchors[k - 1][1];
+  sc.anchors = anchors; sc.W = Math.max(1, w);
+  return html;
+}
+function wordsToLt(sc, x) {
+  const A = sc.anchors; if (!A) return 0;
+  if (x <= 0) return 0; if (x >= A[A.length - 1][0]) return A[A.length - 1][1];
+  for (let k = 1; k < A.length; k++) if (x <= A[k][0]) { const [w0, t0] = A[k - 1], [w1, t1] = A[k]; return w1 === w0 ? t1 : t0 + (t1 - t0) * (x - w0) / (w1 - w0); }
+  return A[A.length - 1][1];
+}
+function ltToWords(sc, lt) {
+  const A = sc.anchors; if (!A) return 0;
+  for (let k = 1; k < A.length; k++) if (lt <= A[k][1]) { const [w0, t0] = A[k - 1], [w1, t1] = A[k]; return t1 === t0 ? w0 : w0 + (w1 - w0) * (lt - t0) / (t1 - t0); }
+  return A[A.length - 1][0];
+}
+function render(prevT, seeking) {
+  const i = sceneAt(Math.min(T, TOTAL - .001));
+  if (i !== curIdx) {
+    SCENES.forEach((s, k) => s.el.classList.toggle('live', k === i));
+    if (curIdx !== -1 && !seeking && playing) sfx('scene');
+    curIdx = i; chipBtns.forEach((b, k) => b.classList.toggle('on', k === i));
+    if (recording && cues[i] == null) { cues[i] = recElapsed; IDB.setMeta({ cues: cues.slice(), saved: false, type: recorder && recorder.mimeType }); }
+    $('#pTitle').textContent = `${String(i + 1).padStart(2, '0')} · ${SCENES[i].name}`;
+    const nx = SCENES[i + 1];
+    $('#ptext').innerHTML = buildPrompter(SCENES[i]) + (nx ? `<p class="next">הבא: ${nx.name}</p>` : '');
+    $('#ptext').scrollTop = 0; if (window.__prReset) window.__prReset();
+  }
+  const s = SCENES[i], lt = T - s.start, plt = prevT - s.start;
+  s.reveal.forEach(r => {
+    const on = lt >= r.t;
+    if (on !== r.e.classList.contains('in')) {
+      r.e.classList.toggle('in', on);
+      if (on && r.s && !seeking && playing && plt < r.t) sfx(r.s);
+    }
+  });
+  s.counts.forEach(e => {
+    const k = Math.max(0, Math.min(1, (lt - parseFloat(e.dataset.ct)) / parseFloat(e.dataset.cd)));
+    const v = String(Math.round(+e.dataset.count * k)); if (e.textContent !== v) e.textContent = v;
+  });
+  if (s.update) s.update.call(s, lt, s.el, n => { if (!seeking && playing) sfx(n); });
+  // other scenes: reset reveals so they replay on entry
+  SCENES.forEach((o, k) => { if ((k < i - 1 || k > i) && o.el.dataset.dirty !== '0') { o.reveal.forEach(r => r.e.classList.remove('in')); o.el.dataset.dirty = '0'; } });
+  s.el.dataset.dirty = '1';
+  // chrome
+  segs.forEach((b, k) => { const sc = SCENES[k]; b.style.width = (Math.max(0, Math.min(1, (T - sc.start) / sc.dur)) * 100) + '%'; });
+  $('#seek').value = T.toFixed(1);
+  $('#time').textContent = recording ? `● ${fmt(recElapsed)}` : (media && media.duration && isFinite(media.duration)) ? `${fmt(media.currentTime)} / ${fmt(media.duration)}` : `${fmt(T)} / ${fmt(TOTAL)}`;
+  $('#pLeft').textContent = `נותרו בפרק: ${Math.max(0, Math.ceil(s.dur - lt))} שנ׳`;
+  if (window.__studioHook) window.__studioHook(i, lt);
+  if (window.__director) window.__director(i, lt);
+}
+const fmt = t => { t = Math.max(0, Math.floor(t)); return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); };
+
+/* video ↔ animation time. V[i] = video second where chapter i starts (null = not covered).
+   Inside a chapter the animation runs at normal speed, then holds until the next boundary. */
+let V = null;
+function firstCovered() { for (let i = 0; i < V.length; i++) if (V[i] != null) return i; return 0; }
+function videoToAnim(v) {
+  if (!V) return v;
+  let i = -1; for (let k = 0; k < SCENES.length; k++) if (V[k] != null && V[k] <= v) i = k;
+  if (i < 0) return SCENES[firstCovered()].start;
+  return SCENES[i].start + Math.min(SCENES[i].dur - .001, v - V[i]);
+}
+function animToVideo(t) {
+  if (!V) return t;
+  const i = sceneAt(Math.min(t, TOTAL - .001));
+  let k = i; while (k > 0 && V[k] == null) k--;
+  if (V[k] == null) return 0;
+  return V[k] + (k === i ? t - SCENES[i].start : SCENES[k].dur);
+}
+
+let holding = false, recording = false, recElapsed = 0, cues = [], recorder = null, recChunks = [], recBlob = null, lastFile = null;
+let analyser = null, anBuf = null, speakHold = 0;
+function loop(now) {
+  const dt = Math.min(.1, (now - lastNow) / 1000 || 0); lastNow = now;
+  const prev = T;
+  if (playing) {
+    if (media && mediaKind !== 'image' && media.duration) {
+      if (media.ended) { setPlaying(false); }
+      else {
+        T = videoToAnim(media.currentTime);
+        if (Math.abs(T - prev) > 1.5) { render(prev, true); requestAnimationFrame(loop); drawFx(dt); return; }
+      }
+    } else if (window.__driveOn && window.__driveOn()) {
+      const tgt = window.__prTarget(); if (tgt != null) T += (tgt - T) * Math.min(1, dt * 8);
+    } else if (!holding) {
+      T += dt;
+      const i = sceneAt(Math.min(prev, TOTAL - .001)), end = SCENES[i].start + SCENES[i].dur;
+      if ($('#holdOn').checked && !exporting && i < SCENES.length - 1 && prev < end && T >= end) { T = end - .001; holding = true; msg('האנימציה ממתינה לך. כשתסיים להסביר, לחץ "פרק הבא", N, או הקש על המסך.'); }
+    }
+    if (recording) recElapsed += dt;
+    if (T >= TOTAL) { T = TOTAL; if (recording) stopRec(); else setPlaying(false); }
+    schedMusic();
+  } else if (window.__driveOn && window.__driveOn()) {
+    const tgt = window.__prTarget(); if (tgt != null && Math.abs(tgt - T) > .01) T += (tgt - T) * Math.min(1, dt * 8);
+  }
+  // speaker detection: the frame lights up while the speaker talks
+  if (analyser && playing) {
+    analyser.getFloatTimeDomainData(anBuf); let sum = 0; for (let k = 0; k < anBuf.length; k++) sum += anBuf[k] * anBuf[k];
+    const rms = Math.sqrt(sum / anBuf.length);
+    if (rms > .025) speakHold = .25; else speakHold -= dt;
+    pf.classList.toggle('speaking', speakHold > 0);
+  } else pf.classList.remove('speaking');
+  render(prev, false);
+  if (window.__prTick) window.__prTick(dt);
+  drawFx(dt);
+  requestAnimationFrame(loop);
+}
+function nextChapter() {
+  const i = sceneAt(Math.min(T, TOTAL - .001));
+  holding = false; msg(recording ? 'מקליט…' : '');
+  if (i < SCENES.length - 1) {
+    if (media && mediaKind !== 'image' && V && !recording) { seek(SCENES[i + 1].start + .01); return; }
+    const prev = T; T = SCENES[i + 1].start + .001; render(prev, !playing);
+  }
+}
+
+function setPlaying(p) {
+  playing = p;
+  $('#play').textContent = p ? '❚❚ עצור' : '▶ הפעל';
+  if (p) {
+    initAudio(); if (ctx) { ctx.resume(); nextChord = ctx.currentTime + .1; }
+    if (T >= TOTAL) seek(0);
+    if (media && mediaKind !== 'image') { const v = animToVideo(T); if (!media.duration || v < media.duration) { media.currentTime = v; media.play().catch(() => {}); } }
+    if (ytFrame) ytCmd('playVideo');
+    if (recorder && recorder.state === 'paused') recorder.resume();
+  } else {
+    if (media && mediaKind !== 'image') media.pause();
+    if (ytFrame) ytCmd('pauseVideo');
+    if (recorder && recorder.state === 'recording') recorder.pause();
+    if (ctx) setTimeout(() => { if (!playing && !recording) ctx.suspend(); }, 400);
+  }
+}
+function seek(t) {
+  const prev = T; T = Math.max(0, Math.min(TOTAL, t)); holding = false;
+  if (media && mediaKind !== 'image' && media.duration && !recording) media.currentTime = Math.min(animToVideo(T), media.duration);
+  if (ytFrame) ytCmd('seekTo', [animToVideo(T), true]);
+  render(prev, true);
+  if (window.__syncPrompterToT) window.__syncPrompterToT();
+}
+const msg = (t, warn) => { const m = $('#msg'); m.textContent = t; m.classList.toggle('warn', !!warn); };
+
+/* ================= AMBIENT FX (particles) ================= */
+const cv = $('#fx'), g2 = cv.getContext('2d');
+const parts = Array.from({ length: 46 }, () => ({ x: Math.random() * 1600, y: Math.random() * 900, r: .8 + Math.random() * 2.4, v: 6 + Math.random() * 16, a: .15 + Math.random() * .35, ph: Math.random() * 6 }));
+function drawFx(dt) {
+  g2.clearRect(0, 0, 1600, 900);
+  parts.forEach(p => {
+    if (playing) { p.y -= p.v * dt; p.ph += dt; if (p.y < -10) { p.y = 910; p.x = Math.random() * 1600; } }
+    g2.beginPath(); g2.arc(p.x + Math.sin(p.ph) * 8, p.y, p.r, 0, 6.283);
+    g2.fillStyle = `rgba(244,183,62,${p.a})`; g2.fill();
+  });
+}
+
+/* ================= SCALE ================= */
+const frame = $('#frame'), stage = $('#stage');
+function fit() {
+  const w = frame.clientWidth, h = frame.clientHeight;
+  const s = Math.min(w / 1600, h / 900);
+  stage.style.transform = `translate(${(w - 1600 * s) / 2}px, ${(h - 900 * s) / 2}px) scale(${s})`;
+}
+new ResizeObserver(fit).observe(frame); fit();
+
+/* ================= PRESENTER ================= */
+const pf = $('#pframe'), pres = $('#presenter');
+let camStream = null, camVideo = null, ytFrame = null;
+function applyPresenter() {
+  const m = $('#pmode').value;
+  pres.classList.toggle('hidden', m === 'off');
+  pres.classList.toggle('green', m === 'green');
+  pf.classList.toggle('green', m === 'green');
+  const has = { cam: !!camVideo, media: !!pf.querySelector('img,video:not(.cam)'), yt: !!ytFrame }[m];
+  pf.classList.toggle('media', !!has);
+  pf.querySelector('.ph').style.display = (m === 'ph' || ((m === 'media' || m === 'cam' || m === 'yt') && !has)) ? '' : 'none';
+  pf.querySelectorAll('img,video').forEach(e => e.style.display = (e === camVideo ? m === 'cam' : m === 'media') ? '' : 'none');
+  if (ytFrame) ytFrame.style.display = m === 'yt' ? '' : 'none';
+  $('#camSel').hidden = m !== 'cam' || $('#camSel').options.length < 2;
+  $('#mirrorWrap').hidden = m !== 'cam';
+  pres.classList.toggle('side', $('#playout').value === 'side');
+  pf.style.setProperty('--mx', m === 'cam' && $('#mirror').checked ? -1 : 1);
+  $('#autoSync').disabled = !(lastFile && media && mediaKind !== 'image');
+  $('#resetSync').disabled = !V;
+  if (window.__segHook) window.__segHook();
+}
+['pmode', 'playout', 'mirror'].forEach(id => $('#' + id).addEventListener('change', () => { if (id === 'pmode' && $('#pmode').value === 'cam' && !camStream) startCam(); applyPresenter(); }));
+$('#pname').addEventListener('input', e => { $('#ptag').textContent = e.target.value || ' '; });
+$('#pzoom').addEventListener('input', e => pf.style.setProperty('--pz', e.target.value));
+
+// drag inside the frame to re-center the speaker
+let drag = null, px = 50, py = 50;
+pf.addEventListener('pointerdown', e => { if (!pf.classList.contains('media')) return; drag = { x: e.clientX, y: e.clientY, px, py }; try { pf.setPointerCapture(e.pointerId); } catch (_) {} });
+pf.addEventListener('pointermove', e => {
+  if (!drag) return; const r = pf.getBoundingClientRect();
+  const flip = $('#pmode').value === 'cam' && $('#mirror').checked ? -1 : 1;
+  px = Math.max(0, Math.min(100, drag.px - (e.clientX - drag.x) / r.width * 100 * flip));
+  py = Math.max(0, Math.min(100, drag.py - (e.clientY - drag.y) / r.height * 100));
+  pf.style.setProperty('--px', px + '%'); pf.style.setProperty('--py', py + '%');
+});
+pf.addEventListener('pointerup', () => drag = null);
+pf.addEventListener('pointercancel', () => drag = null);
+
+// speaker level → analyser (frame glows while the speaker talks)
+function listenTo(node) { if (!ctx) return; analyser = ctx.createAnalyser(); analyser.fftSize = 1024; anBuf = new Float32Array(analyser.fftSize); node.connect(analyser); }
+
+/* ----- live camera: computer webcam, phone selfie, or a phone connected as a webcam ----- */
+async function startCam(deviceId) {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msg('הדפדפן הזה לא מאפשר גישה למצלמה. פתח את קובץ השיעור ב-Chrome.', true); return; }
+  try {
+    if (camStream) camStream.getTracks().forEach(t => t.stop());
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: deviceId ? { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } } : { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: { echoCancellation: true, noiseSuppression: true }
+    });
+    if (!camVideo) { camVideo = document.createElement('video'); camVideo.className = 'cam'; camVideo.muted = true; camVideo.playsInline = true; camVideo.autoplay = true; pf.appendChild(camVideo); }
+    camVideo.srcObject = camStream; camVideo.play().catch(() => {});
+    initAudio(); if (ctx) listenTo(ctx.createMediaStreamSource(camStream));
+    const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+    const sel = $('#camSel'), cur = camStream.getVideoTracks()[0].getSettings().deviceId;
+    sel.innerHTML = devs.map((d, k) => `<option value="${d.deviceId}">${(d.label || 'מצלמה ' + (k + 1)).replace(/</g, '')}</option>`).join('');
+    if (cur) sel.value = cur;
+    msg('המצלמה פועלת. גרור בתוך המסגרת כדי למרכז את עצמך, ולחץ "הקלט שיעור" כשאתה מוכן.');
+  } catch (err) {
+    camStream = null;
+    msg(err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')
+      ? 'הגישה למצלמה חסומה כאן. פתח את קובץ השיעור (lesson.html) ב-Chrome במחשב או בטלפון, ואשר גישה למצלמה ולמיקרופון.'
+      : 'לא נמצאה מצלמה זמינה. בדוק שהמצלמה מחוברת ולא פתוחה בתוכנה אחרת.', true);
+  }
+  applyPresenter();
+}
+$('#camSel').addEventListener('change', e => startCam(e.target.value));
+
+/* ----- file (image / video / audio) ----- */
+function useMediaBlob(blob, kind) {
+  pf.querySelectorAll('img,video:not(.cam)').forEach(x => x.remove());
+  if (media && mediaKind !== 'image') { media.pause(); if (mediaKind === 'audio') media.remove(); }
+  media = null; mediaKind = null; lastFile = null;
+  const url = URL.createObjectURL(blob);
+  if (kind === 'image') {
+    const im = document.createElement('img'); im.src = url; im.alt = 'המרצה'; pf.appendChild(im); media = null; mediaKind = 'image';
+  } else {
+    const el = document.createElement(kind === 'audio' ? 'audio' : 'video'); el.src = url; el.preload = 'auto'; el.playsInline = true;
+    (kind === 'audio' ? document.body : pf).appendChild(el); media = el; mediaKind = kind; lastFile = blob;
+    initAudio(); if (ctx) { const src = ctx.createMediaElementSource(el); src.connect(ctx.destination); listenTo(src); mediaSrcNode = src; }
+    el.addEventListener('loadedmetadata', () => {
+      const ready = () => { if (isFinite(el.duration)) el.currentTime = Math.min(animToVideo(T), el.duration); if (playing) el.play().catch(() => {}); };
+      // browser recordings often report no length until the end is read once
+      if (el.duration === Infinity) { el.currentTime = 1e101; el.addEventListener('timeupdate', function f() { el.removeEventListener('timeupdate', f); ready(); }); } else ready();
+    }, { once: true });
+  }
+  $('#pmode').value = 'media'; applyPresenter();
+}
+$('#pfile').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  V = null;
+  useMediaBlob(f, f.type.startsWith('image/') ? 'image' : f.type.startsWith('audio/') ? 'audio' : 'video');
+  if (mediaKind !== 'image') msg('הקובץ נטען. כדי שהאנימציה תתקדם לפי הדובר, לחץ "סנכרון אוטומטי לפי הדובר".');
+  e.target.value = '';
+});
+
+/* ----- YouTube ----- */
+function ytId(u) { u = String(u).trim(); const m = u.match(/(?:youtu\.be\/|[?&]v=|embed\/|shorts\/|live\/)([\w-]{11})/); return m ? m[1] : (/^[\w-]{11}$/.test(u) ? u : null); }
+function ytCmd(func, args = []) { try { ytFrame.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args }), '*'); } catch (_) {} }
+$('#ytGo').addEventListener('click', () => {
+  const id = ytId($('#ytUrl').value);
+  if (!id) { msg('לא זיהיתי קישור YouTube. הדבק קישור כמו youtube.com/watch?v=… או youtu.be/…', true); return; }
+  if (ytFrame) ytFrame.remove();
+  ytFrame = document.createElement('iframe');
+  ytFrame.src = `https://www.youtube-nocookie.com/embed/${id}?enablejsapi=1&playsinline=1&rel=0&controls=0`;
+  ytFrame.allow = 'autoplay; encrypted-media'; ytFrame.title = 'סרטון המרצה';
+  pf.appendChild(ytFrame); $('#pmode').value = 'yt'; applyPresenter();
+  msg('הסרטון מתחיל ונעצר יחד עם האנימציה. אם הוא לא מופיע, התצוגה הזו חוסמת את YouTube: פתח את קובץ השיעור בדפדפן, או הורד את הסרטון וטען אותו כקובץ (כך יעבוד גם הסנכרון האוטומטי).');
+});
+
+/* ----- recording: the whole lesson (animation + presenter + voice + music) into ONE video ----- */
+let mediaSrcNode = null, exporting = false;
+function pickMime() { const c = ['video/mp4;codecs=avc1,mp4a', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4']; return c.find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || ''; }
+
+const COMP = { on: false, cv: null, g: null, snap: null, css: '', defs: '', fonts: null, rec: null, chunks: [], dest: null, links: [] };
+async function embedFonts() {
+  try {
+    const link = document.querySelector('link[href*="fonts.googleapis.com/css"]'); if (!link) return '';
+    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 9000);
+    const css = await (await fetch(link.href, { signal: ctl.signal })).text();
+    const re = /\/\*\s*([\w-]+)\s*\*\/\s*(@font-face\s*\{[^}]*\})/g; let m; const jobs = [];
+    while ((m = re.exec(css))) {
+      if (m[1] !== 'hebrew' && m[1] !== 'latin') continue;
+      const block = m[2], u = (block.match(/url\(([^)]+)\)/) || [])[1]; if (!u) continue;
+      jobs.push(fetch(u, { signal: ctl.signal }).then(r => r.blob()).then(b => new Promise(res => { const fr = new FileReader(); fr.onload = () => res(block.replace(u, fr.result)); fr.onerror = () => res(''); fr.readAsDataURL(b); })));
+    }
+    const out = await Promise.all(jobs); clearTimeout(to); return out.join('\n');
+  } catch (_) { return ''; }
+}
+async function prepSnap() {
+  if (!COMP.css) COMP.css = [...document.querySelectorAll('style')].map(s => s.textContent).join('\n').replace(/</g, '\\3c ').replace(/&/g, '\\26 ');
+  if (!COMP.defs) COMP.defs = new XMLSerializer().serializeToString(document.querySelector('svg[aria-hidden="true"]'));
+  if (COMP.fonts == null) { msg('מכין את הגופנים לסרטון…'); COMP.fonts = await embedFonts(); }
+}
+const FREEZE = ['opacity', 'transform', 'width', 'height', 'filter', 'background-size', 'stroke-dashoffset', 'left', 'top', 'right', 'background-color', 'box-shadow'];
+function freezeOne(orig, copy) { const cs = getComputedStyle(orig); FREEZE.forEach(p => copy.style.setProperty(p, cs.getPropertyValue(p), 'important')); }
+function cloneFrozen(el) {
+  const c = el.cloneNode(true);
+  const anims = el.getAnimations ? el.getAnimations({ subtree: true }) : [];
+  if (anims.length) {
+    const O = [el, ...el.querySelectorAll('*')], Cn = [c, ...c.querySelectorAll('*')], idx = new Map(O.map((n, k) => [n, k])), done = new Set();
+    anims.forEach(a => { const t = a.effect && a.effect.target; if (!t || done.has(t) || !idx.has(t)) return; done.add(t); freezeOne(t, Cn[idx.get(t)]); });
+  }
+  return c;
+}
+async function snapshot() {
+  const shell = stage.cloneNode(false);
+  shell.removeAttribute('style'); shell.style.cssText = 'position:relative;left:0;top:0;transform:none;width:1600px;height:900px';
+  for (const ch of stage.children) {
+    if (ch.id === 'fx' || ch.id === 'presenter') continue;
+    if (ch.id === 'scenes') {
+      const sc = ch.cloneNode(false); if (ch.getAnimations().length) freezeOne(ch, sc);
+      for (const s of ch.children) if (s.classList.contains('live') || s.getAnimations().length) sc.appendChild(cloneFrozen(s));
+      shell.appendChild(sc);
+    } else shell.appendChild(cloneFrozen(ch));
+  }
+  const xhtml = new XMLSerializer().serializeToString(shell);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900"><foreignObject x="0" y="0" width="1600" height="900"><div xmlns="http://www.w3.org/1999/xhtml" dir="rtl" style="width:1600px;height:900px;margin:0;font-family:Assistant,Arial,sans-serif"><style>${COMP.fonts}\n${COMP.css}\n*{transition:none!important;animation:none!important}</style>${COMP.defs}${xhtml}</div></foreignObject></svg>`;
+  const img = new Image(); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  await img.decode(); COMP.snap = img;
+}
+async function snapLoop() {
+  while (COMP.on) {
+    const t0 = performance.now();
+    try { await snapshot(); } catch (_) {}
+    await new Promise(r => setTimeout(r, Math.max(10, 50 - (performance.now() - t0))));
+  }
+}
+function rr(g, x, y, w, h, r) { g.beginPath(); if (g.roundRect) g.roundRect(x, y, w, h, Math.max(0, r)); else g.rect(x, y, w, h); }
+function drawSrc(g, src, f, cut) {
+  const sw = src.videoWidth || src.naturalWidth || src.width, sh = src.videoHeight || src.naturalHeight || src.height; if (!sw || !sh) return;
+  const pz = parseFloat(pf.style.getPropertyValue('--pz')) || 1, mx = parseFloat(pf.style.getPropertyValue('--mx')) || 1;
+  const ox = (parseFloat(pf.style.getPropertyValue('--px')) || 50) / 100, oy = (parseFloat(pf.style.getPropertyValue('--py')) || 50) / 100;
+  const s = (cut ? Math.min(f.w / sw, f.h / sh) : Math.max(f.w / sw, f.h / sh)) * (cut ? 1 : pz);
+  const dw = sw * s, dh = sh * s;
+  const dx = cut ? f.x + (f.w - dw) / 2 : f.x + (f.w - dw) * ox, dy = cut ? f.y + f.h - dh : f.y + (f.h - dh) * oy;
+  g.save();
+  if (mx < 0 && src !== segCanvas) { g.translate(2 * f.x + f.w, 0); g.scale(-1, 1); }
+  else if (mx < 0 && src === segCanvas) { g.translate(2 * f.x + f.w, 0); g.scale(-1, 1); }
+  if (cut) { g.shadowColor = 'rgba(0,0,0,.55)'; g.shadowBlur = 24; g.shadowOffsetY = 10; }
+  g.drawImage(src, dx, dy, dw, dh); g.restore();
+}
+function drawPresenter(g, k) {
+  if (pres.classList.contains('hidden')) return;
+  const sr = stage.getBoundingClientRect(), u = 1600 / sr.width * k;
+  const R = el => { const b = el.getBoundingClientRect(); return { x: (b.left - sr.left) * u, y: (b.top - sr.top) * u, w: b.width * u, h: b.height * u }; };
+  const f = R(pf), cs = getComputedStyle(pf), rad = (parseFloat(cs.borderTopLeftRadius) || 0) * k;
+  const cut = pf.classList.contains('cutout'), green = pf.classList.contains('green');
+  const src = [segCanvas, camVideo, ...pf.querySelectorAll('video:not(.cam),img')].find(e => e && pf.contains(e) && e.style.display !== 'none' && (e.videoWidth || e.naturalWidth || (e.tagName === 'CANVAS' && e.width > 1)));
+  g.save();
+  if (!cut) {
+    if (pf.classList.contains('speaking')) { g.shadowColor = 'rgba(244,183,62,.85)'; g.shadowBlur = 36 * k; }
+    rr(g, f.x, f.y, f.w, f.h, rad); g.fillStyle = green ? '#00b140' : 'rgba(26,58,61,.95)'; g.fill(); g.shadowBlur = 0; g.clip();
+  }
+  if (src && !green) drawSrc(g, src, f, cut);
+  else if (!src && !green) { g.fillStyle = 'rgba(244,239,230,.16)'; g.beginPath(); g.arc(f.x + f.w / 2, f.y + f.h * .42, f.w * .14, 0, 6.283); g.fill(); g.beginPath(); g.ellipse(f.x + f.w / 2, f.y + f.h, f.w * .32, f.h * .3, 0, Math.PI, 0); g.fill(); }
+  g.restore();
+  if (!cut && parseFloat(cs.borderTopWidth) > 0) { g.save(); rr(g, f.x, f.y, f.w, f.h, rad); g.lineWidth = Math.max(2, parseFloat(cs.borderTopWidth) * k); g.strokeStyle = pf.classList.contains('media') || green ? '#f4b73e' : 'rgba(244,239,230,.35)'; if (!pf.classList.contains('media') && !green) g.setLineDash([8 * k, 6 * k]); g.stroke(); g.restore(); }
+  const tag = $('#ptag'), ts = getComputedStyle(tag);
+  if (ts.visibility !== 'hidden' && tag.textContent.trim()) {
+    const t = R(tag); g.save(); rr(g, t.x, t.y, t.w, t.h, t.h / 2); g.fillStyle = '#f4b73e'; g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 14 * k; g.fill(); g.shadowBlur = 0;
+    g.fillStyle = '#1a1405'; g.font = `800 ${parseFloat(ts.fontSize) * k}px Assistant, Arial, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = 'rtl';
+    g.fillText(tag.textContent, t.x + t.w / 2, t.y + t.h / 2 + 1); g.restore();
+  }
+}
+function compDraw() {
+  if (!COMP.on) return; requestAnimationFrame(compDraw);
+  const g = COMP.g, W = COMP.cv.width, H = COMP.cv.height, k = W / 1600;
+  if (COMP.snap) g.drawImage(COMP.snap, 0, 0, W, H); else { g.fillStyle = '#0c2a2d'; g.fillRect(0, 0, W, H); }
+  g.drawImage($('#fx'), 0, 0, W, H);
+  drawPresenter(g, k);
+}
+async function compStart(kind) {
+  initAudio(); if (!ctx) throw new Error('no audio');
+  await ctx.resume();
+  await prepSnap();
+  if (!COMP.cv) { COMP.cv = document.createElement('canvas'); COMP.cv.width = 1280; COMP.cv.height = 720; COMP.g = COMP.cv.getContext('2d'); }
+  COMP.on = true; COMP.snap = null;
+  try { await snapshot(); } catch (_) {}
+  snapLoop(); compDraw();
+  COMP.dest = ctx.createMediaStreamDestination(); master.connect(COMP.dest); COMP.links = [];
+  if (kind === 'live' && camStream && camStream.getAudioTracks().length) { const mic = ctx.createMediaStreamSource(camStream); mic.connect(COMP.dest); COMP.links.push(mic); }
+  if (kind === 'export' && mediaSrcNode) { mediaSrcNode.connect(COMP.dest); COMP.links.push(mediaSrcNode); }
+  const stream = new MediaStream([...COMP.cv.captureStream(30).getVideoTracks(), ...COMP.dest.stream.getAudioTracks()]);
+  const mime = pickMime();
+  try { COMP.rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 4000000 } : undefined); }
+  catch (_) { COMP.rec = new MediaRecorder(stream); }
+  COMP.chunks = [];
+  await IDB.clear(); IDB.setMeta({ saved: false, type: COMP.rec.mimeType });
+  COMP.rec.ondataavailable = e => { if (e.data && e.data.size) { COMP.chunks.push(e.data); IDB.add(e.data); } };
+  await new Promise(res => { COMP.rec.onstart = res; COMP.rec.start(1000); });
+}
+function compStop() {
+  return new Promise(res => {
+    const done = () => {
+      COMP.on = false;
+      try { master.disconnect(COMP.dest); } catch (_) {}
+      COMP.links.forEach(n => { try { n === mediaSrcNode ? n.disconnect(COMP.dest) : n.disconnect(); } catch (_) {} });
+      res(COMP.chunks.length ? new Blob(COMP.chunks, { type: (COMP.rec && COMP.rec.mimeType) || 'video/webm' }) : null);
+    };
+    if (!COMP.rec || COMP.rec.state === 'inactive') { done(); return; }
+    COMP.rec.onstop = done; COMP.rec.stop();
+  });
+}
+
+async function startRec() {
+  if ($('#pmode').value !== 'cam' || !camStream) { $('#pmode').value = 'cam'; await startCam(); if (!camStream) return; }
+  if (!window.MediaRecorder) { msg('הדפדפן הזה לא תומך בהקלטה. נסה Chrome.', true); return; }
+  if (media && mediaKind !== 'image') media.pause();
+  media = null; mediaKind = null; V = null; lastFile = null;
+  pf.querySelectorAll('img,video:not(.cam)').forEach(x => x.remove()); applyPresenter();
+  const i = sceneAt(Math.min(T, TOTAL - .001));
+  seek(SCENES[i].start + .001);
+  recElapsed = 0; cues = Array(SCENES.length).fill(null);
+  msg('מכין את ההקלטה…');
+  try { await compStart('live'); } catch (e) { msg('לא הצלחתי להתחיל הקלטה בדפדפן הזה. נסה Chrome מעודכן.', true); return; }
+  recorder = COMP.rec; recording = true; holding = false;
+  $('#rec').textContent = '■ סיים הקלטה'; $('#rec').classList.add('on');
+  msg('מקליט את השיעור המלא: האנימציה, אתה, הקול והמוזיקה, בקובץ אחד. בסוף כל פרק האנימציה מחכה לך עד שתלחץ "פרק הבא".');
+  setPlaying(true);
+}
+async function startExport() {
+  if (recording) return;
+  if (!window.MediaRecorder) { msg('הדפדפן הזה לא תומך ביצירת סרטון. נסה Chrome.', true); return; }
+  seek(0); holding = false; recElapsed = 0;
+  msg('מכין את הסרטון…');
+  try { await compStart('export'); } catch (_) { msg('לא הצלחתי להתחיל ליצור סרטון בדפדפן הזה.', true); return; }
+  recorder = COMP.rec; recording = true; exporting = true;
+  if (media && mediaKind !== 'image') media.addEventListener('ended', () => { if (exporting) stopRec(); }, { once: true });
+  $('#rec').textContent = '■ עצור יצירת סרטון'; $('#rec').classList.add('on');
+  msg('יוצר סרטון של השיעור המלא בזמן אמת. השאר את הדף פתוח ובחזית עד הסוף, או עצור בכל רגע.');
+  setPlaying(true);
+}
+async function stopRec() {
+  if (!recording) return;
+  recording = false; exporting = false;
+  $('#rec').textContent = '● הקלט שיעור'; $('#rec').classList.remove('on');
+  setPlaying(false);
+  const blob = await compStop(); recorder = null;
+  if (!blob || !blob.size) { msg('ההקלטה יצאה ריקה. נסה שוב.', true); return; }
+  recBlob = blob; $('#saveRec').disabled = false;
+  IDB.setMeta({ saved: false, type: blob.type });
+  openPreview();
+  msg(`השיעור המלא מוכן (${fmt(recElapsed)}): האנימציה, אתה והקול בקובץ אחד. לחץ "שמור את השיעור".`);
+  if (saveAfterStop) { saveAfterStop = false; saveRecording(); }
+}
+function openPreview() {
+  const v = $('#pvVideo'); v.src = URL.createObjectURL(recBlob);
+  v.addEventListener('loadedmetadata', () => { if (v.duration === Infinity) { v.currentTime = 1e101; v.addEventListener('timeupdate', function f() { v.removeEventListener('timeupdate', f); v.currentTime = 0; }); } }, { once: true });
+  $('#preview').hidden = false;
+}
+$('#pvClose').addEventListener('click', () => { $('#pvVideo').pause(); $('#preview').hidden = true; });
+$('#pvSave').addEventListener('click', () => saveRecording());
+$('#rec').addEventListener('click', () => recording ? stopRec() : startRec());
+$('#exportBtn').addEventListener('click', () => recording ? stopRec() : startExport());
+$('#nextBtn').addEventListener('click', nextChapter);
+
+let saveAfterStop = false;
+async function saveRecording() {
+  if (!recBlob) return;
+  const ext = /mp4/.test(recBlob.type) ? 'mp4' : 'webm';
+  const name = `שיעור-שיטת-מוישי-חן-${new Date().toISOString().slice(0, 16).replace(/[T:]/g, '-')}.${ext}`;
+  try {
+    const dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null;
+    if (dl) { await dl.save({ filename: name, data: recBlob }); msg('ההקלטה נשמרה.'); IDB.getMeta().then(m => IDB.setMeta(Object.assign({}, m || {}, { saved: true }))); return; }
+  } catch (err) { msg(err && err.code === 'declined' ? 'השמירה בוטלה.' : 'לא הצלחתי לשמור כאן. נסה מקובץ השיעור בדפדפן.', err && err.code !== 'declined'); return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(recBlob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  msg('השיעור המלא נשמר בתיקיית ההורדות (Download).');
+  IDB.getMeta().then(m => IDB.setMeta(Object.assign({}, m || {}, { saved: true })));
+  if ($('#sSave')) $('#sSave').textContent = 'השיעור המלא נשמר בתיקיית ההורדות (Download).';
+}
+$('#saveRec').addEventListener('click', saveRecording);
+
+/* ----- automatic sync to the speaker: chapter changes snap to pauses in speech ----- */
+$('#autoSync').addEventListener('click', async () => {
+  if (!lastFile || !media) return;
+  const btn = $('#autoSync'); btn.disabled = true; msg('מאזין לסרטון ומחפש את ההפסקות של הדובר… בסרטון ארוך זה יכול לקחת דקה.');
+  try {
+    const ab = await lastFile.arrayBuffer();
+    const oc = new OfflineAudioContext(1, 8000, 8000);
+    const buf = await oc.decodeAudioData(ab);
+    const d = buf.getChannelData(0), W = 400, n = Math.floor(d.length / W), rms = new Float32Array(n);
+    for (let k = 0; k < n; k++) { let s2 = 0; for (let j = k * W; j < (k + 1) * W; j++) s2 += d[j] * d[j]; rms[k] = Math.sqrt(s2 / W); }
+    const sorted = Array.from(rms).sort((x, y) => x - y), lo = sorted[Math.floor(n * .1)], hi = sorted[Math.floor(n * .7)];
+    const thr = lo + (hi - lo) * .22, pauses = [];
+    for (let k = 0; k < n;) { if (rms[k] < thr) { let j = k; while (j < n && rms[j] < thr) j++; if (j - k >= 8) pauses.push({ t: (k + j) / 2 * W / 8000, len: (j - k) * W / 8000 }); k = j; } else k++; }
+    const D = buf.duration, NV = Array(SCENES.length).fill(null); NV[0] = 0;
+    for (let i = 1; i < SCENES.length; i++) {
+      const target = SCENES[i].start / TOTAL * D, win = Math.max(10, SCENES[i - 1].dur / TOTAL * D * .35);
+      let best = null, score = -1;
+      pauses.forEach(p => { if (p.t <= NV[i - 1] + 4 || Math.abs(p.t - target) > win) return; const sc = p.len - Math.abs(p.t - target) / win * .6; if (sc > score) { score = sc; best = p; } });
+      NV[i] = best ? best.t : Math.max(target, NV[i - 1] + 4);
+    }
+    V = NV; seek(videoToAnim(media.currentTime || 0));
+    msg(`סונכרן לפי הדובר: מצאתי ${pauses.length} הפסקות בדיבור, וכל פרק מתחיל עכשיו בהפסקה הקרובה למקום שלו. פרק לא מדויק? עצור את הסרטון במקום הנכון ולחץ N.`);
+  } catch (err) { msg('לא הצלחתי לקרוא את הקול מהקובץ הזה. נסה קובץ MP4 או WebM.', true); }
+  btn.disabled = false; applyPresenter();
+});
+$('#resetSync').addEventListener('click', () => { V = null; seek(T); applyPresenter(); msg('הסנכרון בוטל: הסרטון והאנימציה רצים לפי אותו שעון.'); });
+applyPresenter();
+
+/* ================= RECORDING BACKUP (IndexedDB) =================
+   Every second of the recording is written to the browser's storage, so a crash or a
+   closed tab does not lose the lesson. "שחזר הקלטה שלא נשמרה" brings it back. */
+const IDB = {
+  p: null,
+  open() {
+    if (this.p) return this.p;
+    this.p = new Promise(res => {
+      try {
+        const r = indexedDB.open('lesson-recording', 1);
+        r.onupgradeneeded = () => { r.result.createObjectStore('chunks', { autoIncrement: true }); r.result.createObjectStore('meta'); };
+        r.onsuccess = () => res(r.result); r.onerror = () => res(null); r.onblocked = () => res(null);
+      } catch (_) { res(null); }
+    });
+    return this.p;
+  },
+  async tx(store, mode, fn) {
+    const db = await this.open(); if (!db) return null;
+    return new Promise(res => {
+      try { const t = db.transaction(store, mode), req = fn(t.objectStore(store)); t.oncomplete = () => res(req ? req.result : null); t.onerror = t.onabort = () => res(null); }
+      catch (_) { res(null); }
+    });
+  },
+  add(b) { return this.tx('chunks', 'readwrite', st => st.add(b)); },
+  all() { return this.tx('chunks', 'readonly', st => st.getAll()); },
+  clear() { return Promise.all([this.tx('chunks', 'readwrite', st => st.clear()), this.tx('meta', 'readwrite', st => st.clear())]); },
+  setMeta(m) { return this.tx('meta', 'readwrite', st => st.put(m, 'm')); },
+  getMeta() { return this.tx('meta', 'readonly', st => st.get('m')); }
+};
+async function checkRestore() {
+  const m = await IDB.getMeta(); if (!m || m.saved) return;
+  const chunks = await IDB.all(); if (!chunks || !chunks.length) return;
+  $('#sRestore').hidden = false;
+  msg('נמצאה הקלטה קודמת שלא נשמרה. אפשר לשחזר אותה בכפתור "שחזר הקלטה שלא נשמרה" במצב אולפן.');
+}
+$('#sRestore').addEventListener('click', async () => {
+  const m = await IDB.getMeta(), chunks = await IDB.all(); if (!chunks || !chunks.length) return;
+  recBlob = new Blob(chunks, { type: (m && m.type) || 'video/webm' });
+  $('#saveRec').disabled = false; $('#sRestore').hidden = true;
+  openPreview();
+  msg('ההקלטה שוחזרה. לחץ "סיים ושמור" או "שמור את ההקלטה" כדי לשמור אותה כקובץ.');
+  $('#sStop').hidden = false; $('#sStop').textContent = '⬇ שמור את ההקלטה';
+});
+checkRestore();
+startCam().then(() => { if (!camStream) { $('#pmode').value = 'ph'; applyPresenter(); } });
+
+/* ================= TELEPROMPTER =================
+   Scrolls at a speaking pace (words per minute) set by the narrator, starts 1.5 s after a
+   chapter opens, and moves only while the lesson plays. Touching or scrolling the text by hand
+   takes over for a moment, then the auto-scroll continues from where you left it. */
+const PR = { auto: true, wpm: 130, pos: 0, wait: 1.5, hold: 0, words: 1, drive: true, chT: 0, endT: 0 };
+try { const w = +localStorage.getItem('lesson-wpm'); if (w) PR.wpm = w; } catch (_) {}
+function prUI() {
+  $('#prWpm').value = PR.wpm; $('#prWpmTxt').textContent = PR.wpm;
+  const b = $('#prToggle'); b.textContent = PR.auto ? '❚❚ גלילה' : '▶ גלילה'; b.classList.toggle('on', PR.auto);
+}
+function setWpm(v) { PR.wpm = Math.max(50, Math.min(260, Math.round(v / 5) * 5)); prUI(); try { localStorage.setItem('lesson-wpm', PR.wpm); } catch (_) {} }
+window.__prReset = () => {
+  const pt = $('#ptext'); PR.pos = 0; PR.wait = 1.5; PR.hold = 0; PR.chT = 0; PR.endT = 0; pt.scrollTop = 0;
+  PR.words = Math.max(1, pt.querySelectorAll('.w').length);
+};
+/* the text drives the animation: reading position in the chapter = position in the chapter's animation */
+function prMetrics() {
+  const pt = $('#ptext'); if (!pt.offsetParent) return null;
+  const paras = [...pt.querySelectorAll('p:not(.next)')]; if (!paras.length) return null;
+  const top = paras[0].offsetTop, last = paras[paras.length - 1], bottom = last.offsetTop + last.offsetHeight;
+  return { pt, range: Math.max(1, bottom - top - lineH()) };
+}
+window.__driveOn = () => PR.drive && !exporting && !(media && mediaKind !== 'image') && !!prMetrics();
+/* which word sits on the yellow reading line (fractional: moves smoothly as a line passes the guide) */
+function guideY() { const g = document.querySelector('.pguide'); return g ? g.offsetTop : 30; }
+function lineGroups(pt) {
+  const ws = pt.querySelectorAll('.w'), lines = []; let cur = null;
+  ws.forEach((el, k) => { const top = el.offsetTop, h = el.offsetHeight; if (!cur || Math.abs(top - cur.top) > h * .5) { cur = { top, h, first: k, n: 0 }; lines.push(cur); } cur.n++; });
+  return lines;
+}
+function readWords() {
+  const pt = $('#ptext'); const lines = lineGroups(pt); if (!lines.length) return 0;
+  const gy = pt.scrollTop + guideY();
+  const lh = lines[0].h;
+  if (gy < lines[0].top) return 0;
+  // the line on the guide is the line being read: count it as already ~40% read when it arrives
+  for (const L of lines) if (gy < L.top + Math.max(L.h, lh)) return L.first + L.n * Math.max(0, Math.min(1, .4 + .6 * (gy - L.top) / Math.max(L.h, lh)));
+  const L = lines[lines.length - 1]; return L.first + L.n;
+}
+function scrollForWords(x) {
+  const pt = $('#ptext'); const lines = lineGroups(pt); if (!lines.length) return 0;
+  for (const L of lines) if (x <= L.first + L.n) return L.top + L.h * Math.max(0, (x - L.first) / L.n) - guideY();
+  const L = lines[lines.length - 1]; return L.top + L.h - guideY();
+}
+window.__prTarget = () => {
+  const m = prMetrics(); if (!m) return null;
+  const s = SCENES[sceneAt(Math.min(T, TOTAL - .001))];
+  const lt = Math.max(Math.min(PR.chT, 2.2), wordsToLt(s, readWords()));
+  return s.start + Math.min(s.dur - .001, lt);
+};
+window.__syncPrompterToT = () => {
+  if (!window.__driveOn()) return;
+  const pt = $('#ptext'), s = SCENES[sceneAt(Math.min(T, TOTAL - .001))], lt = T - s.start;
+  pt.scrollTop = Math.max(0, scrollForWords(ltToWords(s, lt))); PR.pos = pt.scrollTop; PR.chT = Math.max(PR.chT, 2.2); PR.wait = 0;
+};
+window.__prTick = dt => {
+  const pt = $('#ptext');
+  if (playing) PR.chT += dt;
+  if (pt.offsetParent) { const r = Math.floor(readWords()); if (r !== PR.lastRead) { PR.lastRead = r; pt.querySelectorAll('.w').forEach((e, k) => e.classList.toggle('read', k < r)); } }
+  if (pt.clientHeight) { const want = Math.max(0, pt.clientHeight - lineH() * .5); if (Math.abs((parseFloat(pt.style.paddingBottom) || 0) - want) > 2) pt.style.paddingBottom = want + 'px'; }
+  if (window.__driveOn()) {
+    const s0 = SCENES[sceneAt(Math.min(T, TOTAL - .001))], p = readWords() / (s0.W || 1);
+    if (p >= .995 && playing) {
+      if ($('#holdOn').checked) { if (!holding) { holding = true; msg('סיימת את הטקסט של הפרק. לחץ "פרק הבא" כשאתה מוכן.'); } }
+      else { PR.endT += dt; if (PR.endT > 1.5) { PR.endT = 0; nextChapter(); return; } }
+    } else { PR.endT = 0; if (holding && p < .97) { holding = false; msg(recording ? 'מקליט…' : ''); } }
+  }
+  if (PR.hold > 0) { PR.hold -= dt; PR.pos = pt.scrollTop; return; }
+  if (!playing || !PR.auto || holding) { PR.pos = pt.scrollTop; return; }
+  if (PR.wait > 0) { PR.wait -= dt; return; }
+  const paras = [...pt.querySelectorAll('p:not(.next)')]; if (!paras.length) return;
+  const textH = paras[paras.length - 1].offsetTop + paras[paras.length - 1].offsetHeight - paras[0].offsetTop;
+  const max = pt.scrollHeight - pt.clientHeight; if (max <= 0) return;
+  PR.pos = Math.min(max, PR.pos + textH / PR.words * PR.wpm / 60 * dt);
+  pt.scrollTop = PR.pos;
+};
+const prManual = () => { PR.hold = 2.5; };
+['wheel', 'touchstart', 'touchmove', 'pointerdown'].forEach(ev => $('#ptext').addEventListener(ev, prManual, { passive: true }));
+$('#prDrive').addEventListener('change', e => { PR.drive = e.target.checked; try { localStorage.setItem('lesson-drive', PR.drive ? '1' : '0'); } catch (_) {} if (PR.drive) window.__syncPrompterToT(); });
+try { if (localStorage.getItem('lesson-drive') === '0') { PR.drive = false; $('#prDrive').checked = false; } } catch (_) {}
+$('#prToggle').addEventListener('click', () => { PR.auto = !PR.auto; PR.pos = $('#ptext').scrollTop; prUI(); });
+$('#prWpm').addEventListener('input', e => setWpm(+e.target.value));
+$('#prSlower').addEventListener('click', () => setWpm(PR.wpm - 10));
+$('#prFaster').addEventListener('click', () => setWpm(PR.wpm + 10));
+const lineH = () => parseFloat(getComputedStyle($('#ptext')).lineHeight) || 36;
+$('#prBack').addEventListener('click', () => { const pt = $('#ptext'); pt.scrollTop -= lineH() * 2; PR.pos = pt.scrollTop; PR.wait = 0; });
+$('#prFwd').addEventListener('click', () => { const pt = $('#ptext'); pt.scrollTop += lineH() * 2; PR.pos = pt.scrollTop; PR.wait = 0; });
+$('#prTop').addEventListener('click', () => { window.__prReset(); PR.wait = .6; });
+prUI();
+
+/* ================= STUDIO MODE ================= */
+function enterStudio() {
+  document.body.classList.add('studio'); fit();
+  if ($('#pmode').value !== 'cam' || !camStream) { $('#pmode').value = 'cam'; startCam().then(applyPresenter); }
+  window.scrollTo(0, 0);
+}
+function exitStudio() { if (recording) { msg('קודם סיים את ההקלטה.', true); return; } document.body.classList.remove('studio'); fit(); }
+$('#studioBtn').addEventListener('click', enterStudio);
+$('#sExit').addEventListener('click', exitStudio);
+function setStageH(v) { document.documentElement.style.setProperty('--stageh', v + 'dvh'); document.querySelectorAll('[data-sh]').forEach(b => b.classList.toggle('on', +b.dataset.sh === v)); try { localStorage.setItem('lesson-stageh', v); } catch (_) {} requestAnimationFrame(fit); }
+document.querySelectorAll('[data-sh]').forEach(b => b.addEventListener('click', () => setStageH(+b.dataset.sh)));
+try { setStageH(+localStorage.getItem('lesson-stageh') || 26); } catch (_) { setStageH(26); }
+$('#sVol').addEventListener('input', e => { const mv = $('#musicVol'); mv.value = e.target.value; if (!$('#musicOn').checked) { $('#musicOn').checked = true; $('#musicOn').dispatchEvent(new Event('change')); } mv.dispatchEvent(new Event('input')); });
+$('#musicVol').addEventListener('input', e => { $('#sVol').value = e.target.value; });
+$('#sSfx').addEventListener('change', e => { $('#sfxOn').checked = e.target.checked; $('#sfxOn').dispatchEvent(new Event('change')); });
+$('#sFull').addEventListener('click', () => { try { const p = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); if (p && p.catch) p.catch(() => {}); } catch (_) {} });
+document.addEventListener('fullscreenchange', () => { $('#sFull').textContent = document.fullscreenElement ? 'יציאה ממסך מלא' : 'מסך מלא'; });
+$('#sStart').addEventListener('click', () => { if (!recording) startRec(); });
+$('#sPause').addEventListener('click', () => setPlaying(!playing));
+$('#sNext').addEventListener('click', nextChapter);
+$('#sStop').addEventListener('click', () => {
+  if (recording) { saveAfterStop = true; stopRec(); }
+  else if (recBlob) saveRecording();
+});
+let pfs = 24;
+const setPfs = d => { pfs = Math.max(16, Math.min(44, pfs + d)); document.documentElement.style.setProperty('--pfs', pfs + 'px'); try { localStorage.setItem('lesson-pfs', pfs); } catch (_) {} };
+try { const v = +localStorage.getItem('lesson-pfs'); if (v) { pfs = v; setPfs(0); } } catch (_) {}
+$('#fMinus').addEventListener('click', () => setPfs(-2));
+$('#fPlus').addEventListener('click', () => setPfs(2));
+let lastStudioKey = '';
+window.__studioHook = (i, lt) => {
+  if (!document.body.classList.contains('studio')) return;
+  const rec = $('#sRec');
+  rec.textContent = recording ? (playing ? '● מקליט' : '❚❚ מושהה') : (recBlob ? 'ההקלטה הסתיימה' : 'לא מקליט');
+  rec.classList.toggle('on', recording && playing); rec.classList.toggle('paused', recording && !playing);
+  $('#sTime').textContent = fmt(recElapsed);
+  const s = SCENES[i];
+  $('#sCh').textContent = `פרק ${i + 1} מתוך ${SCENES.length} · ${s.name} · נותרו ${Math.max(0, Math.ceil(s.dur - lt))} שנ׳`;
+  $('#sWait').hidden = !holding;
+  $('#sStart').hidden = recording;
+  $('#sPause').hidden = false; $('#sPause').textContent = playing ? '❚❚ השהה' : (recording ? '▶ המשך' : '▶ חזרה בלי הקלטה');
+  if (recording) { $('#sStop').hidden = false; $('#sStop').textContent = '■ סיים ושמור'; }
+  else if (!recBlob) $('#sStop').hidden = true;
+  else { $('#sStop').hidden = false; $('#sStop').textContent = '⬇ שמור את ההקלטה'; }
+  const key = i + '|' + recording;
+  if (key !== lastStudioKey) {
+    lastStudioKey = key;
+    const up = SCENES.slice(i + 1, i + 4).map((x, k) => `${i + k + 2}. ${x.name} (${fmt(x.dur)})`).join(' · ');
+    $('#sUpcoming').innerHTML = up ? `<b>בהמשך:</b> ${up}` : '<b>זה הפרק האחרון.</b> בסיום לחץ "סיים ושמור".';
+  }
+};
+
+/* ================= BACKGROUNDS ================= */
+const BG = {};
+function mkCanvas(w = 1280, h = 720) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function rng(seed) { let x = seed; return () => (x = (x * 9301 + 49297) % 233280) / 233280; }
+function softened(c, px) { const o = mkCanvas(c.width, c.height), g = o.getContext('2d'); g.filter = `blur(${px}px)`; g.drawImage(c, -px * 2, -px * 2, c.width + px * 4, c.height + px * 4); return o; }
+function vignette(g, w, h, a) { const v = g.createRadialGradient(w / 2, h / 2, h * .35, w / 2, h / 2, w * .75); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, `rgba(0,0,0,${a})`); g.fillStyle = v; g.fillRect(0, 0, w, h); }
+const BG_MAKERS = {
+  studio() {
+    const c = mkCanvas(), g = c.getContext('2d'), R = rng(3);
+    const lg = g.createLinearGradient(0, 0, 1280, 720); lg.addColorStop(0, '#1a5157'); lg.addColorStop(1, '#0a2225'); g.fillStyle = lg; g.fillRect(0, 0, 1280, 720);
+    const rg = g.createRadialGradient(980, 140, 20, 980, 140, 620); rg.addColorStop(0, 'rgba(244,183,62,.28)'); rg.addColorStop(1, 'rgba(244,183,62,0)'); g.fillStyle = rg; g.fillRect(0, 0, 1280, 720);
+    g.strokeStyle = 'rgba(255,255,255,.045)'; g.lineWidth = 1;
+    for (let x = 0; x < 1280; x += 80) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 720); g.stroke(); }
+    for (let y = 0; y < 720; y += 80) { g.beginPath(); g.moveTo(0, y); g.lineTo(1280, y); g.stroke(); }
+    for (let k = 0; k < 46; k++) { g.beginPath(); g.arc(R() * 1280, R() * 720, 8 + R() * 50, 0, 6.283); g.fillStyle = R() > .5 ? `rgba(244,183,62,${.03 + R() * .09})` : `rgba(111,211,176,${.03 + R() * .07})`; g.fill(); }
+    vignette(g, 1280, 720, .45); return softened(c, 1.5);
+  },
+  library() {
+    const c = mkCanvas(), g = c.getContext('2d'), R = rng(11);
+    g.fillStyle = '#24160d'; g.fillRect(0, 0, 1280, 720);
+    const cols = ['#6e1c28', '#1f4652', '#2f4029', '#7c5c22', '#3f2442', '#1d2c48', '#5e3d22', '#14202a', '#80262f'];
+    for (let sh = 0; sh < 4; sh++) {
+      const base = 40 + sh * 172 + 140;
+      for (let x = 14; x < 1270;) {
+        const w = 18 + R() * 24, h = 104 + R() * 34, col = cols[Math.floor(R() * cols.length)];
+        g.fillStyle = col; g.fillRect(x, base - h, w - 2, h);
+        g.fillStyle = 'rgba(255,255,255,.07)'; g.fillRect(x, base - h, 3, h);
+        g.fillStyle = 'rgba(226,186,104,.85)'; g.fillRect(x + 2, base - h + 10, w - 6, 2.5); g.fillRect(x + 2, base - 16, w - 6, 2.5);
+        if (w > 26) { g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(x + 4, base - h * .62, w - 10, h * .22); g.fillStyle = 'rgba(226,186,104,.55)'; g.fillRect(x + 7, base - h * .55, w - 16, 2); g.fillRect(x + 7, base - h * .49, w - 16, 2); }
+        x += w;
+      }
+      g.fillStyle = '#5c3b22'; g.fillRect(0, base, 1280, 16); g.fillStyle = 'rgba(255,220,160,.18)'; g.fillRect(0, base, 1280, 3);
+      g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(0, base + 16, 1280, 18);
+    }
+    const lt = g.createRadialGradient(640, 200, 50, 640, 200, 800); lt.addColorStop(0, 'rgba(255,200,120,.16)'); lt.addColorStop(1, 'rgba(255,200,120,0)'); g.fillStyle = lt; g.fillRect(0, 0, 1280, 720);
+    vignette(g, 1280, 720, .6); return softened(c, 2.5);
+  },
+  stone() {
+    const c = mkCanvas(), g = c.getContext('2d'), R = rng(5);
+    g.fillStyle = '#b89f74'; g.fillRect(0, 0, 1280, 720);
+    let y = 0, row = 0;
+    while (y < 720) {
+      const h = 66 + R() * 26; let x = row % 2 ? -60 : -10;
+      while (x < 1280) { const w = 110 + R() * 120; g.fillStyle = `hsl(${36 + R() * 6},${30 + R() * 10}%,${62 + R() * 12}%)`; g.fillRect(x + 3, y + 3, w - 6, h - 6);
+        for (let k = 0; k < 40; k++) { g.fillStyle = `rgba(${R() > .5 ? '255,255,255' : '90,70,40'},${R() * .12})`; g.fillRect(x + 3 + R() * (w - 8), y + 3 + R() * (h - 8), 2 + R() * 3, 2 + R() * 3); }
+        x += w; }
+      y += h; row++;
+    }
+    const sun = g.createLinearGradient(0, 0, 1280, 720); sun.addColorStop(0, 'rgba(255,214,150,.35)'); sun.addColorStop(.6, 'rgba(255,214,150,0)'); sun.addColorStop(1, 'rgba(60,40,20,.25)'); g.fillStyle = sun; g.fillRect(0, 0, 1280, 720);
+    vignette(g, 1280, 720, .4); return softened(c, 2);
+  },
+  dusk() {
+    const c = mkCanvas(), g = c.getContext('2d'), R = rng(8);
+    const sky = g.createLinearGradient(0, 0, 0, 560); sky.addColorStop(0, '#26285a'); sky.addColorStop(.55, '#b9557a'); sky.addColorStop(1, '#f3a65a'); g.fillStyle = sky; g.fillRect(0, 0, 1280, 720);
+    const sg = g.createRadialGradient(930, 470, 10, 930, 470, 260); sg.addColorStop(0, 'rgba(255,224,160,.95)'); sg.addColorStop(.25, 'rgba(255,200,130,.5)'); sg.addColorStop(1, 'rgba(255,190,120,0)'); g.fillStyle = sg; g.fillRect(0, 0, 1280, 720);
+    g.fillStyle = '#2a1f38';
+    for (let x = 0; x < 1280;) { const w = 40 + R() * 90, h = 40 + R() * 110; g.fillRect(x, 560 - h, w, h + 200); x += w - 4; }
+    [[300, 470, 16, 120], [1060, 455, 14, 140], [180, 500, 12, 80]].forEach(([x, y, w, h]) => { g.fillRect(x, y, w, h + 200); g.beginPath(); g.moveTo(x - 4, y); g.lineTo(x + w / 2, y - 26); g.lineTo(x + w + 4, y); g.fill(); });
+    g.fillRect(560, 470, 160, 200); g.fillStyle = '#c99a3e'; g.beginPath(); g.arc(640, 470, 64, Math.PI, 0); g.fill();
+    g.fillStyle = '#2a1f38'; g.beginPath(); g.arc(820, 500, 34, Math.PI, 0); g.fill(); g.fillRect(786, 500, 68, 200);
+    g.fillStyle = 'rgba(255,214,140,.7)'; for (let k = 0; k < 40; k++) g.fillRect(R() * 1280, 520 + R() * 120, 3, 4);
+    vignette(g, 1280, 720, .35); return softened(c, 2.5);
+  }
+};
+
+/* ================= BACKGROUND REMOVAL (person segmentation) ================= */
+const SEG_VER = '0.1.1675465747';
+let segLib = null, segLoading = null, segBusy = false, segCanvas = null, segCtx = null, bgMode = 'none', customBg = null, segLastT = -1;
+function segSource() {
+  const m = $('#pmode').value;
+  if (m === 'cam') return camVideo;
+  if (m === 'media' && media && mediaKind === 'video') return media;
+  return null;
+}
+function loadSeg() {
+  if (segLoading) return segLoading;
+  segLoading = new Promise((res, rej) => {
+    const sc = document.createElement('script');
+    sc.src = `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@${SEG_VER}/selfie_segmentation.js`;
+    sc.crossOrigin = 'anonymous';
+    sc.onload = async () => {
+      try {
+        const seg = new window.SelfieSegmentation({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@${SEG_VER}/${f}` });
+        seg.setOptions({ modelSelection: 1, selfieMode: false });
+        seg.onResults(onSeg);
+        await seg.initialize(); segLib = seg; res(seg);
+      } catch (e) { rej(e); }
+    };
+    sc.onerror = rej; document.head.appendChild(sc);
+  });
+  segLoading.catch(() => { segLoading = null; });
+  return segLoading;
+}
+function drawCover(g, img, w, h) {
+  const iw = img.width, ih = img.height, s = Math.max(w / iw, h / ih), dw = iw * s, dh = ih * s;
+  g.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+}
+function onSeg(r) {
+  const img = r.image, w = img.width, h = img.height; if (!w || !h) return;
+  if (segCanvas.width !== w || segCanvas.height !== h) { segCanvas.width = w; segCanvas.height = h; }
+  const g = segCtx; g.save(); g.clearRect(0, 0, w, h);
+  g.drawImage(r.segmentationMask, 0, 0, w, h);
+  g.globalCompositeOperation = 'source-in'; g.drawImage(img, 0, 0, w, h);
+  g.globalCompositeOperation = 'destination-over';
+  if (bgMode === 'blur') { g.filter = 'blur(16px)'; g.drawImage(img, -24, -24, w + 48, h + 48); g.filter = 'none'; }
+  else if (bgMode === 'green') { g.fillStyle = '#00b140'; g.fillRect(0, 0, w, h); }
+  else if (bgMode !== 'cut') { const b = bgMode === 'custom' ? customBg : (BG[bgMode] || (BG[bgMode] = BG_MAKERS[bgMode] && BG_MAKERS[bgMode]())); if (b) drawCover(g, b, w, h); }
+  g.restore();
+}
+async function segTick() {
+  requestAnimationFrame(segTick);
+  if (bgMode === 'none' || !segLib || segBusy) return;
+  const v = segSource(); if (!v || v.readyState < 2 || !v.videoWidth) return;
+  if (v !== camVideo && v.paused && v.currentTime === segLastT) return;
+  segLastT = v.currentTime; segBusy = true;
+  try { await segLib.send({ image: v }); } catch (_) {}
+  segBusy = false;
+}
+requestAnimationFrame(segTick);
+window.__segHook = () => {
+  if (!segCanvas) { segCanvas = document.createElement('canvas'); segCanvas.className = 'segc'; segCtx = segCanvas.getContext('2d'); pf.appendChild(segCanvas); }
+  const v = segSource(), on = bgMode !== 'none' && !!v && !!segLib;
+  segCanvas.style.display = on ? '' : 'none';
+  if (on) v.style.display = 'none';
+  pf.classList.toggle('cutout', on && bgMode === 'cut');
+  if (on && $('#pmode').value === 'media') pf.classList.add('media');
+};
+$('#bgSel').addEventListener('change', e => {
+  const val = e.target.value;
+  if (val === 'custom' && !customBg) { $('#bgFile').click(); }
+  bgMode = val;
+  if (val === 'none') { applyPresenter(); msg(''); return; }
+  if (!segSource()) msg('הרקע יופעל על המצלמה החיה או על סרטון שנטען כקובץ.');
+  if (!segLib) msg('טוען את מנגנון הסרת הרקע… (בפעם הראשונה זה לוקח כמה שניות)');
+  loadSeg().then(() => { applyPresenter(); msg(val === 'cut' ? 'הרקע הוסר: רק אתה, עומד על האנימציה. מומלץ לשלב עם "בצד, גדול".' : 'הרקע הוחלף. הקלטה שומרת את הווידאו המקורי, והרקע מוחל בזמן הצפייה בשיעור.'); })
+    .catch(() => { bgMode = 'none'; $('#bgSel').value = 'none'; applyPresenter(); msg('לא הצלחתי לטעון את הסרת הרקע. היא דורשת חיבור לאינטרנט, ולא עובדת בתוך התצוגה של Claude. פתח את השיעור מהקישור שלך או מהקובץ.', true); });
+});
+$('#bgFile').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) { if (!customBg) { $('#bgSel').value = 'none'; bgMode = 'none'; applyPresenter(); } return; }
+  const im = new Image(); im.onload = () => { customBg = im; }; im.src = URL.createObjectURL(f);
+});
+
+/* ================= DIRECTOR =================
+   Each chapter gets a shot list built from its own reveal times: the presenter only moves
+   in stretches where nothing new appears, and goes big (center / full screen) only after
+   everything in the chapter is already on screen. */
+const SHOTS = ['corner', 'side', 'top'];
+function buildPlan(i) {
+  const s = SCENES[i], D = s.dur;
+  const R = [0, ...s.reveal.map(r => r.t)].sort((a, b) => a - b);
+  const last = R[R.length - 1], home = SHOTS[i % 3];
+  const plan = [{ from: 0, pos: home }];
+  let alt = (i + 1) % 3;
+  for (let k = 1; k < R.length; k++) {
+    const a = R[k - 1], b = R[k];
+    if (b - a >= 12) { plan.push({ from: a + 2, pos: SHOTS[alt] }); alt = (alt + 1) % 3; if (SHOTS[alt] === home) alt = (alt + 1) % 3; }
+  }
+  const g0 = last + 3, g1 = D - 1.5;
+  if (g1 - g0 >= 7) {
+    plan.push({ from: g0, pos: i % 2 ? 'center' : 'full' });
+    if (g1 - g0 > 14) plan.push({ from: g0 + 12, pos: home });
+    else plan.push({ from: g1, pos: home });
+  }
+  return plan;
+}
+const PLANS = SCENES.map((_, i) => buildPlan(i));
+let lastPos = '';
+window.__director = (i, lt) => {
+  const mode = $('#pmode').value;
+  let pos = $('#playout').value;
+  if ($('#dynOn').checked && mode !== 'off') { const pl = PLANS[i]; for (const seg of pl) if (lt >= seg.from) pos = seg.pos; }
+  if (pos === lastPos) return; lastPos = pos;
+  ['corner', 'side', 'top', 'center', 'full'].forEach(c => pres.classList.toggle('pos-' + c, c === pos));
+  stage.classList.toggle('pfocus', (pos === 'center' || pos === 'full') && mode !== 'off');
+};
+$('#dynOn').addEventListener('change', () => { lastPos = ''; render(T, true); });
+$('#playout').addEventListener('change', () => { lastPos = ''; render(T, true); });
+
+/* ================= CONTROLS ================= */
+$('#play').addEventListener('click', () => setPlaying(!playing));
+stage.addEventListener('click', e => { if (holding && !e.target.closest('#presenter')) nextChapter(); });
+$('#seek').addEventListener('input', e => seek(+e.target.value));
+chipBtns.forEach(b => b.addEventListener('click', () => seek(SCENES[+b.dataset.i].start + .01)));
+const goCh = d => { const i = Math.max(0, Math.min(SCENES.length - 1, sceneAt(T) + d)); seek(SCENES[i].start + .01); };
+$('#prevCh').addEventListener('click', () => goCh(-1));
+$('#nextCh').addEventListener('click', () => goCh(1));
+$('#musicOn').addEventListener('change', e => { if (musicG) musicG.gain.setTargetAtTime(e.target.checked ? +$('#musicVol').value : 0, ctx.currentTime, .3); });
+$('#musicVol').addEventListener('input', e => { if (musicG && $('#musicOn').checked) musicG.gain.setTargetAtTime(+e.target.value, ctx.currentTime, .1); });
+$('#sfxOn').addEventListener('change', e => { if (sfxG) sfxG.gain.value = e.target.checked ? .7 : 0; });
+$('#fs').addEventListener('click', () => { try { (document.fullscreenElement ? document.exitFullscreen() : frame.requestFullscreen()).catch(() => {}); } catch (_) {} });
+document.addEventListener('fullscreenchange', fit);
+$('#clean').addEventListener('click', () => { document.body.classList.add('clean'); fit(); });
+$('#exitClean').addEventListener('click', () => { document.body.classList.remove('clean'); fit(); });
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input[type=text],select')) return;
+  if (e.code === 'Space') { e.preventDefault(); setPlaying(!playing); }
+  else if (e.key === 'ArrowLeft') seek(T + 5);   // RTL: left = forward
+  else if (e.key === 'ArrowRight') seek(T - 5);
+  else if (e.key === 'n' || e.key === 'N' || e.key === 'מ') {
+    if (media && mediaKind !== 'image' && !recording) {
+      const i = sceneAt(Math.min(T, TOTAL - .001)); if (i < SCENES.length - 1) {
+        if (!V) V = SCENES.map(x => x.start);
+        V[i + 1] = media.currentTime; for (let k = i + 2; k < V.length; k++) if (V[k] != null && V[k] <= V[k - 1]) V[k] = V[k - 1] + 4;
+        seek(videoToAnim(media.currentTime)); applyPresenter(); msg(`פרק ${i + 2} יתחיל מעכשיו, בדקה ${fmt(V[i + 1])} של הסרטון.`);
+      }
+    } else nextChapter();
+  }
+  else if (e.key === 'PageDown') goCh(1);
+  else if (e.key === 'PageUp') goCh(-1);
+  else if (e.key === 'Escape') { document.body.classList.remove('clean'); if (!recording) document.body.classList.remove('studio'); fit(); }
+});
+
+render(0, true);
+requestAnimationFrame(t => { lastNow = t; requestAnimationFrame(loop); });
+})();
+</script>
+
+</body></html>
