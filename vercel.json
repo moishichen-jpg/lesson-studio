@@ -1,0 +1,3 @@
+{
+  "ignoreCommand": "case \"$VERCEL_URL\" in tozaot-next-stage*) echo 'skip: not this project'; exit 0;; *) exit 1;; esac"
+}
